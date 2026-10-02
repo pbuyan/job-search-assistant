@@ -1,0 +1,13 @@
+{
+  "Common": { "appName": "Assistant de recherche d'emploi", "language": "Langue" },
+  "Nav": { "dashboard": "Tableau de bord", "profile": "Profil", "jobs": "Emplois", "tracker": "Suivi" },
+  "Home": { "title": "Trouvez le bon emploi, plus vite", "subtitle": "Associez les offres à votre expérience, adaptez votre CV et suivez chaque candidature." },
+  "Tracker": {
+    "status": {
+      "saved": "Enregistrée", "applied": "Postulée", "screening": "Présélection",
+      "interviewing": "Entrevue", "offer": "Offre", "accepted": "Acceptée",
+      "rejected": "Refusée", "withdrawn": "Retirée", "ghosted": "Sans réponse"
+    },
+    "count": "{count, plural, =0 {Aucune candidature} one {# candidature} other {# candidatures}}"
+  }
+}

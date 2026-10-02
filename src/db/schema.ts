@@ -35,6 +35,7 @@ export const users = pgTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   name: text("name"),
+  locale: text("locale").default("en").notNull(), // UI language
   ...timestamps,
 });
 
@@ -53,6 +54,7 @@ export const profiles = pgTable("profiles", {
   salaryCurrency: text("salary_currency").default("CAD"),
   embedding: vector("embedding", { dimensions: EMBEDDING_DIMS }),
   sourceFileKey: text("source_file_key"), // private storage key of the uploaded resume
+  language: text("language").default("en").notNull(), // resume language
   ...timestamps,
 });
 
@@ -75,6 +77,7 @@ export const jobs = pgTable("jobs", {
   embedding: vector("embedding", { dimensions: EMBEDDING_DIMS }),
   postedAt: timestamp("posted_at", { withTimezone: true }),
   closedAt: timestamp("closed_at", { withTimezone: true }),
+  language: text("language"), // job posting language, detected
   ...timestamps,
 }, (t) => [
   index("jobs_user_idx").on(t.userId),
@@ -93,6 +96,7 @@ export const jobMatches = pgTable("job_matches", {
   analysis: jsonb("analysis").$type<FitAnalysis>().notNull(),
   model: text("model").notNull(),
   promptVersion: text("prompt_version").notNull(),
+  analysisLanguage: text("analysis_language").default("en").notNull(),
   ...timestamps,
 }, (t) => [
   index("job_matches_job_idx").on(t.jobId),
@@ -110,6 +114,7 @@ export const resumeVersions = pgTable("resume_versions", {
   model: text("model"),
   promptVersion: text("prompt_version"),
   exportedFileKey: text("exported_file_key"),         // PDF/DOCX actually sent
+  language: text("language").default("en").notNull(), // resume language
   ...timestamps,
 }, (t) => [index("resume_versions_user_idx").on(t.userId)]);
 

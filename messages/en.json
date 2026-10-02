@@ -1,0 +1,13 @@
+{
+  "Common": { "appName": "Job Search Assistant", "language": "Language" },
+  "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker" },
+  "Home": { "title": "Find the right job, faster", "subtitle": "Match jobs to your experience, tailor your resume, track every application." },
+  "Tracker": {
+    "status": {
+      "saved": "Saved", "applied": "Applied", "screening": "Screening",
+      "interviewing": "Interviewing", "offer": "Offer", "accepted": "Accepted",
+      "rejected": "Rejected", "withdrawn": "Withdrawn", "ghosted": "No response"
+    },
+    "count": "{count, plural, =0 {No applications} one {# application} other {# applications}}"
+  }
+}
