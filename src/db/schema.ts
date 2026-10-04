@@ -74,6 +74,8 @@ export const jobs = pgTable("jobs", {
   salaryCurrency: text("salary_currency"),
   descriptionRaw: text("description_raw").notNull(),
   requirements: jsonb("requirements").$type<ParsedRequirements>(), // AI-extracted
+  requirementsModel: text("requirements_model"),
+  requirementsPromptVersion: text("requirements_prompt_version"),
   embedding: vector("embedding", { dimensions: EMBEDDING_DIMS }),
   postedAt: timestamp("posted_at", { withTimezone: true }),
   closedAt: timestamp("closed_at", { withTimezone: true }),
@@ -191,10 +193,12 @@ export type ParsedRequirements = {
   responsibilities: string[];
 };
 
+// requirementId points into the job's ParsedRequirements: "must:<i>" or
+// "nice:<i>". It lets the score be recomputed from the stored analysis.
 export type FitAnalysis = {
   summary: string;
-  matched: { requirement: string; evidenceBulletIds: string[] }[];
-  gaps: { requirement: string; severity: "minor" | "major"; suggestion?: string }[];
+  matched: { requirementId: string; requirement: string; evidenceBulletIds: string[] }[];
+  gaps: { requirementId: string; requirement: string; severity: "minor" | "major"; suggestion?: string }[];
   keywordsToEmphasize: string[];
 };
 

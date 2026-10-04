@@ -1,13 +1,232 @@
 {
-  "Common": { "appName": "Assistant de recherche d'emploi", "language": "Langue" },
+  "Common": {
+    "appName": "Assistant de recherche d'emploi",
+    "language": "Langue",
+    "signIn": "Se connecter",
+    "signUp": "Créer un compte",
+    "theme": "Thème",
+    "themeSystem": "Système",
+    "themeLight": "Clair",
+    "themeDark": "Sombre"
+  },
   "Nav": { "dashboard": "Tableau de bord", "profile": "Profil", "jobs": "Emplois", "tracker": "Suivi" },
-  "Home": { "title": "Trouvez le bon emploi, plus vite", "subtitle": "Associez les offres à votre expérience, adaptez votre CV et suivez chaque candidature." },
+  "Sidebar": {
+    "title": "Barre latérale",
+    "mobileDescription": "Affiche la barre latérale mobile.",
+    "toggle": "Afficher ou masquer la barre latérale"
+  },
+  "Home": {
+    "title": "Trouvez le bon emploi, plus vite",
+    "subtitle": "Associez les offres à votre expérience, adaptez votre CV et suivez chaque candidature.",
+    "goToDashboard": "Aller au tableau de bord"
+  },
+  "Dashboard": { "title": "Tableau de bord", "empty": "L'aperçu de votre recherche d'emploi s'affichera ici." },
+  "Profile": {
+    "title": "Profil",
+    "description": "Votre profil principal. Les CV adaptés ne font que réorganiser, raccourcir et reformuler ce qui s'y trouve.",
+    "datePlaceholder": "AAAA-MM",
+    "confirmImport": "Confirmer et enregistrer le profil importé",
+    "basicsFields": {
+      "name": "nom complet", "label": "titre professionnel", "email": "courriel",
+      "phone": "téléphone", "location": "lieu", "summary": "résumé"
+    },
+    "import": {
+      "title": "Importer à partir d'un CV",
+      "description": "Téléversez un CV en PDF ou Word (.docx) pour remplir le formulaire ci-dessous. Vous vérifiez tout avant que quoi que ce soit soit enregistré.",
+      "file": "Fichier du CV (PDF ou DOCX, jusqu'à 5 Mo)",
+      "import": "Importer",
+      "importing": "Lecture de votre CV…",
+      "privacy": "Le texte de votre CV est envoyé à Claude (Anthropic) pour en extraire vos informations. Le fichier lui-même n'est pas conservé.",
+      "errors": {
+        "noFile": "Choisissez d'abord un fichier PDF ou DOCX.",
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "invalidFile": "Ce fichier est inutilisable. Choisissez un fichier PDF ou DOCX.",
+        "tooLarge": "Ce fichier dépasse 5 Mo.",
+        "unsupportedType": "Seuls les fichiers PDF et DOCX sont pris en charge.",
+        "unreadable": "Ce fichier n'a pas pu être lu. Il est peut-être endommagé ou protégé par un mot de passe.",
+        "noText": "Aucun texte trouvé. Les CV numérisés ne sont pas pris en charge; téléversez un PDF ou un DOCX dont le texte est sélectionnable.",
+        "tooLong": "Ce document est trop long pour être un CV.",
+        "noContent": "Aucune information de CV n'a été trouvée dans ce fichier.",
+        "parseFailed": "Votre CV n'a pas pu être traité. Réessayez.",
+        "network": "Le téléversement a échoué. Vérifiez votre connexion et réessayez."
+      },
+      "review": {
+        "title": "Vérifiez le CV importé",
+        "body": "Ces informations ont été extraites de votre CV et chargées dans le formulaire ci-dessous. Rien n'est enregistré tant que vous n'avez pas confirmé.",
+        "languageApplied": "Langue détectée : {language}. La langue du CV ci-dessous a été ajustée en conséquence.",
+        "languageUnsupported": "Langue détectée : {language}. Elle n'est pas offerte comme langue de CV; la langue du CV reste donc {current}.",
+        "replaces": "La confirmation remplace ce que vous avez actuellement :",
+        "basicsChanged": "Coordonnées modifiées : {fields}",
+        "countChanged": "{section} : {before} → {after}",
+        "sections": { "work": "Postes", "bullets": "Réalisations", "education": "Formations", "skills": "Groupes de compétences" },
+        "nothingReplaced": "Votre profil était vide; rien n'est remplacé.",
+        "discard": "Annuler l'importation"
+      }
+    },
+    "resumeLanguage": "Langue du CV",
+    "resumeLanguageHint": "La langue dans laquelle le contenu de votre CV est rédigé. Elle est distincte de la langue de l'application.",
+    "languages": { "en": "Anglais", "fr": "Français" },
+    "basics": "Coordonnées",
+    "name": "Nom complet",
+    "headline": "Titre professionnel",
+    "email": "Courriel",
+    "phone": "Téléphone",
+    "location": "Lieu",
+    "summary": "Résumé",
+    "work": "Expérience professionnelle",
+    "workN": "Poste {n}",
+    "removeWorkN": "Supprimer le poste {n}",
+    "company": "Entreprise",
+    "position": "Titre du poste",
+    "startDate": "Date de début",
+    "endDate": "Date de fin (laisser vide si en cours)",
+    "bullets": "Réalisations",
+    "bulletN": "Réalisation {n}",
+    "removeBulletN": "Supprimer la réalisation {n}",
+    "addBullet": "Ajouter une réalisation",
+    "addWork": "Ajouter un poste",
+    "education": "Formation",
+    "educationN": "Formation {n}",
+    "removeEducationN": "Supprimer la formation {n}",
+    "institution": "Établissement",
+    "studyType": "Diplôme",
+    "area": "Domaine d'études",
+    "addEducation": "Ajouter une formation",
+    "skills": "Compétences",
+    "skillCategory": "Catégorie",
+    "skillItems": "Compétences (séparées par des virgules)",
+    "removeSkillN": "Supprimer le groupe de compétences {n}",
+    "addSkill": "Ajouter un groupe de compétences",
+    "save": "Enregistrer le profil",
+    "saving": "Enregistrement…",
+    "saved": "Profil enregistré.",
+    "saveError": {
+      "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+      "invalid": "Certains champs sont invalides. Vérifiez le formulaire et réessayez.",
+      "failed": "Impossible d'enregistrer votre profil. Réessayez."
+    },
+    "errors": {
+      "required": "Ce champ est obligatoire.",
+      "duplicateId": "Identifiant de réalisation en double."
+    }
+  },
+  "Jobs": {
+    "title": "Emplois",
+    "empty": "Aucun emploi pour l'instant. Ajoutez-en un à partir d'un lien ou en collant sa description.",
+    "add": "Ajouter un emploi",
+    "untitled": "Emploi sans titre",
+    "added": "Ajouté le {date}",
+    "new": {
+      "title": "Ajouter un emploi",
+      "description": "Collez le lien de l'offre ou son texte. Nous en extrairons les exigences, puis vous pourrez voir dans quelle mesure votre profil y correspond.",
+      "tabUrl": "Lien",
+      "tabText": "Coller le texte",
+      "urlLabel": "URL de l'offre",
+      "urlHint": "Les liens LinkedIn, Indeed et Glassdoor ne peuvent pas être lus automatiquement; collez plutôt le texte.",
+      "textLabel": "Description du poste",
+      "sourceUrlLabel": "Lien vers l'offre (facultatif)",
+      "privacy": "Le texte de l'offre est envoyé à Claude (Anthropic) pour en extraire les exigences, et à Voyage AI pour la rendre consultable par recherche.",
+      "submit": "Ajouter l'emploi",
+      "submitting": "Lecture de l'offre…",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "invalid": "Entrez un lien ou collez la description du poste.",
+        "invalidUrl": "Entrez un lien complet commençant par http:// ou https://.",
+        "blockedSite": "Ce site n'autorise pas l'accès automatisé. Copiez la description du poste et collez-la plutôt.",
+        "blockedAddress": "Cette adresse n'est pas accessible d'ici. Utilisez un lien public ou collez le texte.",
+        "httpError": "La page n'a pas pu être chargée. Vérifiez le lien ou collez plutôt le texte.",
+        "notHtml": "Ce lien ne mène pas à une page Web. Collez plutôt la description du poste.",
+        "tooLarge": "Cette page est trop volumineuse pour être lue. Collez plutôt la description du poste.",
+        "timeout": "Le site a mis trop de temps à répondre. Réessayez ou collez le texte.",
+        "fetchFailed": "La page n'a pas pu être chargée. Vérifiez le lien ou collez plutôt le texte.",
+        "needsPaste": "Nous n'avons pas trouvé la description du poste sur cette page. Collez-la ci-dessous; nous avons conservé le lien.",
+        "tooShort": "C'est trop court pour une description de poste. Collez l'offre complète.",
+        "tooLong": "C'est trop long pour une seule offre d'emploi.",
+        "parseFailed": "L'offre n'a pas pu être traitée. Réessayez.",
+        "noRequirements": "Aucune exigence n'a été trouvée dans cette offre. Vérifiez que vous avez collé la description complète.",
+        "embedFailed": "L'emploi n'a pas pu être indexé. Réessayez.",
+        "failed": "L'emploi n'a pas pu être enregistré. Réessayez."
+      }
+    },
+    "detail": {
+      "untitled": "Emploi sans titre",
+      "remote": { "onsite": "Sur place", "hybrid": "Hybride", "remote": "Télétravail" },
+      "postingLanguage": "Offre en {language}",
+      "viewPosting": "Voir l'offre",
+      "fit": "Correspondance avec votre profil",
+      "scoreExplained": "Le score est calculé à partir des exigences ci-dessous : les exigences obligatoires comptent trois fois plus que les atouts, et un écart mineur compte comme à moitié satisfait.",
+      "otherLanguage": "Cette analyse a été rédigée en {language}. Relancez-la pour l'obtenir dans la langue actuelle.",
+      "analyzedAt": "Analysé le {date}",
+      "matched": "{count, plural, =0 {Exigences satisfaites} one {# exigence satisfaite} other {# exigences satisfaites}}",
+      "noneMatched": "Aucune exigence n'est encore appuyée par votre profil.",
+      "kind": { "must": "Obligatoire", "nice": "Atout" },
+      "evidence": "Preuves tirées de votre profil",
+      "sourceRemoved": "Cette réalisation n'est plus dans votre profil. Relancez l'analyse.",
+      "gaps": "{count, plural, =0 {Écarts} one {# écart} other {# écarts}}",
+      "noGaps": "Aucun écart trouvé.",
+      "severity": { "major": "Écart majeur", "minor": "Écart mineur" },
+      "keywords": "Mots clés à mettre en valeur",
+      "notAnalyzed": "Cet emploi n'a pas encore été comparé à votre profil.",
+      "analyze": "Analyser la correspondance",
+      "rerun": "Relancer l'analyse",
+      "analyzing": "Analyse en cours…",
+      "analyzingHint": "Cela peut prendre jusqu'à une minute.",
+      "goToProfile": "Aller à votre profil",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "notFound": "Cet emploi n'existe plus.",
+        "noProfile": "Ajoutez d'abord votre expérience professionnelle et vos réalisations à votre profil.",
+        "noRequirements": "Cet emploi n'a pas d'exigences extraites à comparer.",
+        "parseFailed": "L'analyse n'a pas pu être effectuée. Réessayez.",
+        "invalidAnalysis": "L'analyse citait une expérience absente de votre profil; elle a donc été rejetée. Réessayez.",
+        "failed": "L'analyse n'a pas pu être enregistrée. Réessayez."
+      },
+      "requirementsTitle": "Exigences extraites",
+      "requirementsHint": "Telles qu'elles figurent dans l'offre.",
+      "requirementGroups": { "mustHave": "Obligatoires", "niceToHave": "Atouts" }
+    }
+  },
   "Tracker": {
+    "title": "Suivi",
+    "empty": "Vos candidatures s'afficheront ici.",
+    "goToJobs": "Ajoutez un poste au suivi à partir de sa page.",
+    "hint": "Glissez une carte vers une autre colonne pour mettre à jour son statut.",
     "status": {
       "saved": "Enregistrée", "applied": "Postulée", "screening": "Présélection",
       "interviewing": "Entrevue", "offer": "Offre", "accepted": "Acceptée",
       "rejected": "Refusée", "withdrawn": "Retirée", "ghosted": "Sans réponse"
     },
-    "count": "{count, plural, =0 {Aucune candidature} one {# candidature} other {# candidatures}}"
+    "count": "{count, plural, =0 {Aucune candidature} one {# candidature} other {# candidatures}}",
+    "card": {
+      "untitled": "Poste sans titre",
+      "noCompany": "Entreprise inconnue",
+      "fit": "Adéquation {score}",
+      "notAnalyzed": "Non analysé",
+      "nextStep": "Prochaine étape",
+      "due": "échéance le {date}"
+    },
+    "a11y": {
+      "roleDescription": "candidature déplaçable",
+      "instructions": "Pour saisir une candidature, appuyez sur Espace ou Entrée. Utilisez les flèches pour la déplacer entre les colonnes, Espace ou Entrée pour la déposer et Échap pour annuler.",
+      "picked": "Candidature « {title} » saisie.",
+      "over": "La candidature « {title} » est au-dessus de la colonne {column}.",
+      "notOver": "La candidature « {title} » n'est plus au-dessus d'une colonne.",
+      "dropped": "La candidature « {title} » a été déposée dans la colonne {column}.",
+      "cancelled": "Le déplacement de la candidature « {title} » a été annulé."
+    },
+    "track": {
+      "add": "Ajouter ce poste au suivi",
+      "adding": "Ajout en cours…",
+      "tracked": "Dans votre suivi : {status}.",
+      "open": "Ouvrir le suivi",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "notFound": "Ce poste n'existe plus.",
+        "failed": "Impossible d'ajouter le poste. Réessayez."
+      }
+    },
+    "errors": {
+      "moveFailed": "Impossible de déplacer la carte. Réessayez."
+    }
   }
 }

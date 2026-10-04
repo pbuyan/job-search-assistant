@@ -1,7 +1,9 @@
 "use client";
+import { useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
+import { updateLocale } from "@/features/profile/actions";
 import {
   Select,
   SelectContent,
@@ -17,16 +19,23 @@ export function LanguageSwitcher() {
   const t = useTranslations("Common");
   const router = useRouter();
   const pathname = usePathname();
+  const [pending, startTransition] = useTransition();
+
+  function onChange(next: Locale) {
+    startTransition(async () => {
+      await updateLocale(next);
+      router.replace(pathname, { locale: next });
+    });
+  }
 
   return (
     <Select
       items={routing.locales.map((l) => ({ value: l, label: names[l] }))}
       value={locale}
-      onValueChange={(next) =>
-        router.replace(pathname, { locale: next as Locale })
-      }
+      disabled={pending}
+      onValueChange={(next) => onChange(next as Locale)}
     >
-      <SelectTrigger className="w-36" aria-label={t("language")}>
+      <SelectTrigger className="w-full" aria-label={t("language")}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

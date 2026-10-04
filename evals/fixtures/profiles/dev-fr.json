@@ -1,0 +1,72 @@
+{
+  "basics": {
+    "name": "Personne Candidate",
+    "label": "Développeuse full-stack principale (TypeScript, React, Java)",
+    "email": "candidate@example.com",
+    "location": "Montréal (Québec)",
+    "summary": "Développeuse full-stack cumulant huit ans d'expérience dans la création d'applications Web et d'API pour le commerce et la logistique."
+  },
+  "work": [
+    {
+      "id": "fr-w1",
+      "company": "Northwind Commerce",
+      "position": "Développeuse full-stack principale",
+      "startDate": "2022-03",
+      "location": "Montréal (Québec)",
+      "bullets": [
+        { "id": "fr-w1b1", "text": "J'ai dirigé la refonte de l'application Web de gestion des commandes en React et TypeScript, réduisant le temps de chargement médian de 3,2 s à 1,1 s." },
+        { "id": "fr-w1b2", "text": "J'ai conçu et maintenu des API REST et GraphQL en Java (Spring Boot) et Node.js utilisées par 40 intégrations internes et partenaires." },
+        { "id": "fr-w1b3", "text": "J'ai conçu un pipeline d'exécution des commandes piloté par événements sur Kafka et PostgreSQL qui traite 2 millions de commandes par mois." },
+        { "id": "fr-w1b4", "text": "J'ai mis en place des tests de contrat et de bout en bout (JUnit, Jest, Playwright), faisant passer la couverture des parcours critiques de 35 % à 85 %." },
+        { "id": "fr-w1b5", "text": "Je participe à la rotation de garde; j'ai ajouté des tableaux de bord Datadog, des SLO et des alertes, et rédigé des guides de retour en arrière qui ont réduit de moitié le temps moyen de rétablissement." },
+        { "id": "fr-w1b6", "text": "J'ai encadré quatre développeurs de niveau intermédiaire au moyen de revues de code, de programmation en binôme et de revues d'architecture." },
+        { "id": "fr-w1b7", "text": "J'utilise quotidiennement des assistants de programmation IA pour des tâches bien délimitées et je révise chaque changement généré avant sa fusion." }
+      ]
+    },
+    {
+      "id": "fr-w2",
+      "company": "Maple Logistics",
+      "position": "Développeuse de logiciels",
+      "startDate": "2018-06",
+      "endDate": "2022-02",
+      "location": "Montréal (Québec)",
+      "bullets": [
+        { "id": "fr-w2b1", "text": "J'ai développé des fonctionnalités d'entrepôt et de suivi des stocks en Java et Spring, utilisées chaque jour par 300 employés de l'entrepôt et de l'approvisionnement." },
+        { "id": "fr-w2b2", "text": "J'ai recueilli les besoins directement auprès des équipes d'exploitation de l'entrepôt, en français et en anglais, et traduit leurs flux de travail en logiciels." },
+        { "id": "fr-w2b3", "text": "J'ai migré un monolithe vers des microservices sur AWS (ECS, SQS/SNS, RDS), réduisant le temps de déploiement de deux heures à 15 minutes." },
+        { "id": "fr-w2b4", "text": "J'ai ajouté au tableau de bord des opérations le suivi en direct de l'état des expéditions à l'aide de WebSockets." },
+        { "id": "fr-w2b5", "text": "J'ai mis en place des pipelines CI/CD avec GitHub Actions et Docker pour 12 services." },
+        { "id": "fr-w2b6", "text": "J'ai rédigé des documents de conception technique et expliqué les compromis aux gestionnaires de produit et aux parties prenantes non techniques." }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "fr-p1",
+      "name": "budget-cli (logiciel libre)",
+      "bullets": [
+        { "id": "fr-p1b1", "text": "Je maintiens un outil libre de budget en ligne de commande écrit en TypeScript (1 200 étoiles sur GitHub) : tri des demandes, revues et publications." }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Université Concordia",
+      "studyType": "Baccalauréat en informatique",
+      "area": "Systèmes logiciels",
+      "startDate": "2014-09",
+      "endDate": "2018-05"
+    }
+  ],
+  "skills": [
+    { "category": "Langages", "items": ["TypeScript", "JavaScript", "Java", "SQL", "Python (notions)"] },
+    { "category": "Interface", "items": ["React", "Next.js", "HTML", "CSS"] },
+    { "category": "Serveur", "items": ["Node.js", "Spring Boot", "GraphQL", "REST"] },
+    { "category": "Données et messagerie", "items": ["PostgreSQL", "Kafka", "Redis"] },
+    { "category": "Infonuagique et outils", "items": ["AWS", "Docker", "GitHub Actions", "Datadog"] }
+  ],
+  "languages": [
+    { "language": "Anglais", "fluency": "Langue maternelle" },
+    { "language": "Français", "fluency": "Compétence professionnelle" }
+  ]
+}

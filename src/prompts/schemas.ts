@@ -84,12 +84,14 @@ export const fitAnalysisSchema = z.object({
   summary: z.string(),
   matched: z.array(
     z.object({
+      requirementId: z.string(),
       requirement: z.string(),
       evidenceBulletIds: z.array(z.string()),
     }),
   ),
   gaps: z.array(
     z.object({
+      requirementId: z.string(),
       requirement: z.string(),
       severity: z.enum(["minor", "major"]),
       suggestion: z.string().optional(),

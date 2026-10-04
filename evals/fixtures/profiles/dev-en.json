@@ -1,0 +1,72 @@
+{
+  "basics": {
+    "name": "Sample Candidate",
+    "label": "Senior Full-Stack Developer (TypeScript, React, Java)",
+    "email": "candidate@example.com",
+    "location": "Montréal, QC",
+    "summary": "Full-stack developer with eight years of experience building web applications and APIs for commerce and logistics."
+  },
+  "work": [
+    {
+      "id": "w1",
+      "company": "Northwind Commerce",
+      "position": "Senior Full-Stack Developer",
+      "startDate": "2022-03",
+      "location": "Montréal, QC",
+      "bullets": [
+        { "id": "w1b1", "text": "Led the redesign of the order-management web app in React and TypeScript, cutting median page load time from 3.2 s to 1.1 s." },
+        { "id": "w1b2", "text": "Built and maintained REST and GraphQL APIs in Java (Spring Boot) and Node.js used by 40 internal and partner integrations." },
+        { "id": "w1b3", "text": "Designed an event-driven fulfilment pipeline on Kafka and PostgreSQL that processes 2 million orders a month." },
+        { "id": "w1b4", "text": "Introduced contract and end-to-end tests (JUnit, Jest, Playwright), raising coverage of critical flows from 35% to 85%." },
+        { "id": "w1b5", "text": "Took part in the on-call rotation; added Datadog dashboards, SLOs and alerts, and wrote rollback runbooks that halved mean time to recovery." },
+        { "id": "w1b6", "text": "Mentored four intermediate developers through code reviews, pairing and architecture reviews." },
+        { "id": "w1b7", "text": "Use AI coding assistants daily for well-scoped tasks and review every generated change before it is merged." }
+      ]
+    },
+    {
+      "id": "w2",
+      "company": "Maple Logistics",
+      "position": "Software Developer",
+      "startDate": "2018-06",
+      "endDate": "2022-02",
+      "location": "Montréal, QC",
+      "bullets": [
+        { "id": "w2b1", "text": "Developed warehouse and inventory-tracking features in Java and Spring used daily by 300 warehouse and procurement staff." },
+        { "id": "w2b2", "text": "Gathered requirements directly from warehouse operations teams, in French and English, and turned their workflows into software." },
+        { "id": "w2b3", "text": "Migrated a monolith to microservices on AWS (ECS, SQS/SNS, RDS), reducing deployment time from two hours to 15 minutes." },
+        { "id": "w2b4", "text": "Added live shipment-status updates to the operations dashboard using WebSockets." },
+        { "id": "w2b5", "text": "Set up CI/CD pipelines with GitHub Actions and Docker for 12 services." },
+        { "id": "w2b6", "text": "Wrote technical design documents and explained trade-offs to product managers and non-technical stakeholders." }
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "id": "p1",
+      "name": "budget-cli (open source)",
+      "bullets": [
+        { "id": "p1b1", "text": "Maintain an open-source TypeScript command-line budgeting tool (1,200 GitHub stars), handling issues, reviews and releases." }
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Concordia University",
+      "studyType": "Bachelor of Computer Science",
+      "area": "Software Systems",
+      "startDate": "2014-09",
+      "endDate": "2018-05"
+    }
+  ],
+  "skills": [
+    { "category": "Languages", "items": ["TypeScript", "JavaScript", "Java", "SQL", "Python (basic)"] },
+    { "category": "Front end", "items": ["React", "Next.js", "HTML", "CSS"] },
+    { "category": "Back end", "items": ["Node.js", "Spring Boot", "GraphQL", "REST"] },
+    { "category": "Data and messaging", "items": ["PostgreSQL", "Kafka", "Redis"] },
+    { "category": "Cloud and tooling", "items": ["AWS", "Docker", "GitHub Actions", "Datadog"] }
+  ],
+  "languages": [
+    { "language": "English", "fluency": "Native" },
+    { "language": "French", "fluency": "Professional working proficiency" }
+  ]
+}

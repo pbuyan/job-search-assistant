@@ -1,13 +1,232 @@
 {
-  "Common": { "appName": "Job Search Assistant", "language": "Language" },
+  "Common": {
+    "appName": "Job Search Assistant",
+    "language": "Language",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark"
+  },
   "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker" },
-  "Home": { "title": "Find the right job, faster", "subtitle": "Match jobs to your experience, tailor your resume, track every application." },
+  "Sidebar": {
+    "title": "Sidebar",
+    "mobileDescription": "Displays the mobile sidebar.",
+    "toggle": "Toggle sidebar"
+  },
+  "Home": {
+    "title": "Find the right job, faster",
+    "subtitle": "Match jobs to your experience, tailor your resume, track every application.",
+    "goToDashboard": "Go to dashboard"
+  },
+  "Dashboard": { "title": "Dashboard", "empty": "Your job search overview will appear here." },
+  "Profile": {
+    "title": "Profile",
+    "description": "Your master profile. Tailored resumes only reorder, trim and reword what is here.",
+    "datePlaceholder": "YYYY-MM",
+    "confirmImport": "Confirm and save imported profile",
+    "basicsFields": {
+      "name": "full name", "label": "headline", "email": "email",
+      "phone": "phone", "location": "location", "summary": "summary"
+    },
+    "import": {
+      "title": "Import from a resume",
+      "description": "Upload a PDF or Word (.docx) resume to fill in the form below. You review everything before anything is saved.",
+      "file": "Resume file (PDF or DOCX, up to 5 MB)",
+      "import": "Import",
+      "importing": "Reading your resume…",
+      "privacy": "The text of your resume is sent to Claude (Anthropic) to extract your details. The file itself is not stored.",
+      "errors": {
+        "noFile": "Choose a PDF or DOCX file first.",
+        "unauthorized": "Your session has expired. Sign in again.",
+        "invalidFile": "That file could not be used. Choose a PDF or DOCX file.",
+        "tooLarge": "That file is larger than 5 MB.",
+        "unsupportedType": "Only PDF and DOCX files are supported.",
+        "unreadable": "That file could not be read. It may be damaged or password-protected.",
+        "noText": "No text was found. Scanned resumes are not supported; upload a PDF or DOCX with selectable text.",
+        "tooLong": "That document is too long to be a resume.",
+        "noContent": "No resume details could be found in that file.",
+        "parseFailed": "Your resume could not be processed. Try again.",
+        "network": "The upload failed. Check your connection and try again."
+      },
+      "review": {
+        "title": "Review the imported resume",
+        "body": "These details were extracted from your resume and loaded into the form below. Nothing is saved until you confirm.",
+        "languageApplied": "Detected language: {language}. The resume language below was set to match.",
+        "languageUnsupported": "Detected language: {language}. It is not available as a resume language, so the resume language is still {current}.",
+        "replaces": "Confirming replaces what you have now:",
+        "basicsChanged": "Basics that change: {fields}",
+        "countChanged": "{section}: {before} → {after}",
+        "sections": { "work": "Positions", "bullets": "Achievements", "education": "Education entries", "skills": "Skill groups" },
+        "nothingReplaced": "Your profile was empty, so nothing is being replaced.",
+        "discard": "Discard import"
+      }
+    },
+    "resumeLanguage": "Resume language",
+    "resumeLanguageHint": "The language your resume content is written in. This is separate from the app language.",
+    "languages": { "en": "English", "fr": "French" },
+    "basics": "Basics",
+    "name": "Full name",
+    "headline": "Headline",
+    "email": "Email",
+    "phone": "Phone",
+    "location": "Location",
+    "summary": "Summary",
+    "work": "Work experience",
+    "workN": "Position {n}",
+    "removeWorkN": "Remove position {n}",
+    "company": "Company",
+    "position": "Job title",
+    "startDate": "Start date",
+    "endDate": "End date (leave empty if current)",
+    "bullets": "Achievements",
+    "bulletN": "Achievement {n}",
+    "removeBulletN": "Remove achievement {n}",
+    "addBullet": "Add achievement",
+    "addWork": "Add position",
+    "education": "Education",
+    "educationN": "Education {n}",
+    "removeEducationN": "Remove education {n}",
+    "institution": "Institution",
+    "studyType": "Degree",
+    "area": "Field of study",
+    "addEducation": "Add education",
+    "skills": "Skills",
+    "skillCategory": "Category",
+    "skillItems": "Skills (comma-separated)",
+    "removeSkillN": "Remove skill group {n}",
+    "addSkill": "Add skill group",
+    "save": "Save profile",
+    "saving": "Saving…",
+    "saved": "Profile saved.",
+    "saveError": {
+      "unauthorized": "Your session has expired. Sign in again.",
+      "invalid": "Some fields are invalid. Check the form and try again.",
+      "failed": "Could not save your profile. Try again."
+    },
+    "errors": {
+      "required": "This field is required.",
+      "duplicateId": "Duplicate achievement id."
+    }
+  },
+  "Jobs": {
+    "title": "Jobs",
+    "empty": "No jobs yet. Add one from a link or by pasting its description.",
+    "add": "Add a job",
+    "untitled": "Untitled job",
+    "added": "Added {date}",
+    "new": {
+      "title": "Add a job",
+      "description": "Paste a link to the posting, or paste its text. We'll extract the requirements and you can then check how well your profile fits.",
+      "tabUrl": "Link",
+      "tabText": "Paste text",
+      "urlLabel": "Posting URL",
+      "urlHint": "LinkedIn, Indeed and Glassdoor links can't be read automatically; paste the text instead.",
+      "textLabel": "Job description",
+      "sourceUrlLabel": "Link to the posting (optional)",
+      "privacy": "The posting text is sent to Claude (Anthropic) to extract the requirements, and to Voyage AI to make it searchable.",
+      "submit": "Add job",
+      "submitting": "Reading the posting…",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "invalid": "Enter a link or paste the job description.",
+        "invalidUrl": "Enter a full http:// or https:// link.",
+        "blockedSite": "This site doesn't allow automated access. Copy the job description and paste it instead.",
+        "blockedAddress": "That address can't be reached from here. Use a public link or paste the text.",
+        "httpError": "The page couldn't be loaded. Check the link, or paste the text instead.",
+        "notHtml": "That link isn't a web page. Paste the job description instead.",
+        "tooLarge": "That page is too large to read. Paste the job description instead.",
+        "timeout": "The site took too long to respond. Try again or paste the text.",
+        "fetchFailed": "The page couldn't be loaded. Check the link, or paste the text instead.",
+        "needsPaste": "We couldn't find the job description on that page. Paste it below; we kept the link.",
+        "tooShort": "That's too short to be a job description. Paste the full posting.",
+        "tooLong": "That's too long to be a single job posting.",
+        "parseFailed": "The posting couldn't be processed. Try again.",
+        "noRequirements": "No requirements were found in that posting. Check that you pasted the full description.",
+        "embedFailed": "The job couldn't be indexed. Try again.",
+        "failed": "The job couldn't be saved. Try again."
+      }
+    },
+    "detail": {
+      "untitled": "Untitled job",
+      "remote": { "onsite": "On site", "hybrid": "Hybrid", "remote": "Remote" },
+      "postingLanguage": "Posting in {language}",
+      "viewPosting": "View posting",
+      "fit": "Fit with your profile",
+      "scoreExplained": "The score is calculated from the requirements below: required ones count three times as much as preferred ones, and a minor gap counts as half met.",
+      "otherLanguage": "This analysis was written in {language}. Re-run it to get it in the current language.",
+      "analyzedAt": "Analyzed {date}",
+      "matched": "{count, plural, =0 {Requirements you meet} one {# requirement you meet} other {# requirements you meet}}",
+      "noneMatched": "None of the requirements are backed by your profile yet.",
+      "kind": { "must": "Required", "nice": "Preferred" },
+      "evidence": "Evidence from your profile",
+      "sourceRemoved": "This achievement is no longer in your profile. Re-run the analysis.",
+      "gaps": "{count, plural, =0 {Gaps} one {# gap} other {# gaps}}",
+      "noGaps": "No gaps found.",
+      "severity": { "major": "Major gap", "minor": "Minor gap" },
+      "keywords": "Keywords to emphasize",
+      "notAnalyzed": "This job hasn't been compared with your profile yet.",
+      "analyze": "Analyze fit",
+      "rerun": "Re-run analysis",
+      "analyzing": "Analyzing…",
+      "analyzingHint": "This can take up to a minute.",
+      "goToProfile": "Go to your profile",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "notFound": "This job no longer exists.",
+        "noProfile": "Add your work experience and achievements to your profile first.",
+        "noRequirements": "This job has no extracted requirements to compare against.",
+        "parseFailed": "The analysis couldn't be completed. Try again.",
+        "invalidAnalysis": "The analysis cited experience that isn't in your profile, so it was discarded. Try again.",
+        "failed": "The analysis couldn't be saved. Try again."
+      },
+      "requirementsTitle": "Extracted requirements",
+      "requirementsHint": "As written in the posting.",
+      "requirementGroups": { "mustHave": "Required", "niceToHave": "Preferred" }
+    }
+  },
   "Tracker": {
+    "title": "Tracker",
+    "empty": "Your applications will appear here.",
+    "goToJobs": "Track a job from its page.",
+    "hint": "Drag a card to another column to update its status.",
     "status": {
       "saved": "Saved", "applied": "Applied", "screening": "Screening",
       "interviewing": "Interviewing", "offer": "Offer", "accepted": "Accepted",
       "rejected": "Rejected", "withdrawn": "Withdrawn", "ghosted": "No response"
     },
-    "count": "{count, plural, =0 {No applications} one {# application} other {# applications}}"
+    "count": "{count, plural, =0 {No applications} one {# application} other {# applications}}",
+    "card": {
+      "untitled": "Untitled job",
+      "noCompany": "Unknown company",
+      "fit": "Fit {score}",
+      "notAnalyzed": "Not analyzed",
+      "nextStep": "Next step",
+      "due": "due {date}"
+    },
+    "a11y": {
+      "roleDescription": "draggable application",
+      "instructions": "To pick up an application, press Space or Enter. Use the arrow keys to move it between columns, Space or Enter to drop it, and Escape to cancel.",
+      "picked": "Picked up {title}.",
+      "over": "{title} is over the {column} column.",
+      "notOver": "{title} is no longer over a column.",
+      "dropped": "{title} was dropped in the {column} column.",
+      "cancelled": "Moving {title} was cancelled."
+    },
+    "track": {
+      "add": "Track this job",
+      "adding": "Adding…",
+      "tracked": "In your tracker: {status}.",
+      "open": "Open tracker",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "notFound": "This job no longer exists.",
+        "failed": "The job couldn't be added. Try again."
+      }
+    },
+    "errors": {
+      "moveFailed": "The card couldn't be moved. Try again."
+    }
   }
 }

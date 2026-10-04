@@ -40,6 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# eval run output (pnpm eval)
+/evals/results/
+
 # Playwright
 node_modules/
 /test-results/
@@ -47,3 +50,4 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+/.playwright-mcp/
