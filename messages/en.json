@@ -33,7 +33,7 @@
     "import": {
       "title": "Import from a resume",
       "description": "Upload a PDF or Word (.docx) resume to fill in the form below. You review everything before anything is saved.",
-      "file": "Resume file (PDF or DOCX, up to 5 MB)",
+      "file": "Resume file (PDF or DOCX, up to {maxMb} MB)",
       "import": "Import",
       "importing": "Reading your resume…",
       "privacy": "The text of your resume is sent to Claude (Anthropic) to extract your details. The file itself is not stored.",
@@ -41,7 +41,7 @@
         "noFile": "Choose a PDF or DOCX file first.",
         "unauthorized": "Your session has expired. Sign in again.",
         "invalidFile": "That file could not be used. Choose a PDF or DOCX file.",
-        "tooLarge": "That file is larger than 5 MB.",
+        "tooLarge": "That file is larger than {maxMb} MB. Upload a smaller file.",
         "unsupportedType": "Only PDF and DOCX files are supported.",
         "unreadable": "That file could not be read. It may be damaged or password-protected.",
         "noText": "No text was found. Scanned resumes are not supported; upload a PDF or DOCX with selectable text.",

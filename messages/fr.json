@@ -33,7 +33,7 @@
     "import": {
       "title": "Importer à partir d'un CV",
       "description": "Téléversez un CV en PDF ou Word (.docx) pour remplir le formulaire ci-dessous. Vous vérifiez tout avant que quoi que ce soit soit enregistré.",
-      "file": "Fichier du CV (PDF ou DOCX, jusqu'à 5 Mo)",
+      "file": "Fichier du CV (PDF ou DOCX, jusqu'à {maxMb} Mo)",
       "import": "Importer",
       "importing": "Lecture de votre CV…",
       "privacy": "Le texte de votre CV est envoyé à Claude (Anthropic) pour en extraire vos informations. Le fichier lui-même n'est pas conservé.",
@@ -41,7 +41,7 @@
         "noFile": "Choisissez d'abord un fichier PDF ou DOCX.",
         "unauthorized": "Votre session a expiré. Reconnectez-vous.",
         "invalidFile": "Ce fichier est inutilisable. Choisissez un fichier PDF ou DOCX.",
-        "tooLarge": "Ce fichier dépasse 5 Mo.",
+        "tooLarge": "Ce fichier dépasse {maxMb} Mo. Téléversez un fichier plus petit.",
         "unsupportedType": "Seuls les fichiers PDF et DOCX sont pris en charge.",
         "unreadable": "Ce fichier n'a pas pu être lu. Il est peut-être endommagé ou protégé par un mot de passe.",
         "noText": "Aucun texte trouvé. Les CV numérisés ne sont pas pris en charge; téléversez un PDF ou un DOCX dont le texte est sélectionnable.",

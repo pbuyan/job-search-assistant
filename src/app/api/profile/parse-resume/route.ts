@@ -1,8 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { extractResumeText, MAX_FILE_BYTES } from "@/features/profile/extract-text";
+import { extractResumeText } from "@/features/profile/extract-text";
 import { parseResume } from "@/features/profile/parse-resume";
+import { MAX_FILE_BYTES } from "@/features/profile/upload-limits";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -31,6 +32,13 @@ const fail = (error: ErrorCode, status: number) =>
 export async function POST(req: Request) {
   const { userId } = await auth();
   if (!userId) return fail("unauthorized", 401);
+
+  // Refuse an oversized body before buffering it. The multipart envelope adds
+  // a little on top of the file itself.
+  const declared = Number(req.headers.get("content-length"));
+  if (Number.isFinite(declared) && declared > MAX_FILE_BYTES + 64 * 1024) {
+    return fail("tooLarge", 413);
+  }
 
   let form: FormData;
   try {

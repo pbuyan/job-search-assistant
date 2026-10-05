@@ -6,9 +6,8 @@ import { Field } from "@/components/profile/field";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MAX_FILE_BYTES, MAX_FILE_MB } from "@/features/profile/upload-limits";
 import type { ProfileDataInput } from "@/prompts/schemas";
-
-const MAX_FILE_BYTES = 5 * 1024 * 1024;
 
 export type ParsedResume = { data: ProfileDataInput; language: string };
 
@@ -69,6 +68,10 @@ export function ResumeImport({
       if (res.ok && result?.ok) {
         onParsed({ data: result.data, language: result.language });
         if (input.current) input.current.value = "";
+      } else if (res.status === 413) {
+        // The platform (e.g. Vercel's 4.5 MB cap) can reject the body before
+        // our handler runs, so there may be no JSON error code.
+        setError("tooLarge");
       } else {
         const code = result && !result.ok ? result.error : "";
         setError(KNOWN.has(code) ? (code as ErrorKey) : "parseFailed");
@@ -90,7 +93,7 @@ export function ResumeImport({
           {t("description")}
         </p>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <Field label={t("file")} className="w-full sm:max-w-sm">
+          <Field label={t("file", { maxMb: MAX_FILE_MB })} className="w-full sm:max-w-sm">
             <Input
               ref={input}
               type="file"
@@ -112,7 +115,7 @@ export function ResumeImport({
           {t("privacy")}
         </p>
         <p role="alert" className="text-start text-sm text-destructive">
-          {error ? t(`errors.${error}`) : null}
+          {error ? t(`errors.${error}`, { maxMb: MAX_FILE_MB }) : null}
         </p>
       </CardContent>
     </Card>

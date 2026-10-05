@@ -19,17 +19,16 @@ if (!databaseUrl) {
   throw new Error("DATABASE_URL is not set");
 }
 
-// In dev, Next.js hot-reloads server modules, which would otherwise open a
-// fresh connection pool on every edit. Cache the client on `globalThis` so
-// it survives HMR; in production each server instance gets its own pool.
+// One client per module instance: a warm serverless function reuses it across
+// invocations, and in dev it is cached on `globalThis` so Next.js hot reloads
+// don't open a new connection on every edit.
+//
+// `prepare: false` because pooled connections (Supabase/Neon poolers,
+// pgbouncer in transaction mode) don't support named prepared statements.
+// `max: 1` keeps each serverless instance to one connection, since many
+// instances can run at once; the pooler, not this client, multiplexes them.
 const client =
-  globalThis.__dbClient ??
-  postgres(databaseUrl, {
-    max: process.env.NODE_ENV === "production" ? 10 : 1,
-  });
-
-if (process.env.NODE_ENV !== "production") {
-  globalThis.__dbClient = client;
-}
+  globalThis.__dbClient ?? postgres(databaseUrl, { prepare: false, max: 1 });
+globalThis.__dbClient = client;
 
 export const db = drizzle(client, { schema });
