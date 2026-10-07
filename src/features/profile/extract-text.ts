@@ -1,7 +1,8 @@
 import mammoth from "mammoth";
 import { PDFParse } from "pdf-parse";
+import { MAX_FILE_BYTES } from "./upload-limits";
 
-export const MAX_FILE_BYTES = 5 * 1024 * 1024;
+export { MAX_FILE_BYTES };
 // A resume is a few thousand characters; this guards the model call, and an
 // over-long document is rejected rather than silently cut.
 export const MAX_TEXT_CHARS = 60_000;

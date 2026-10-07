@@ -15,7 +15,10 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
+// Log only the message and SQLSTATE code: a Postgres error's `detail` can
+// echo row values (e.g. "Key (email)=(...) already exists"), which may be PII.
+main().catch((err: unknown) => {
+  const { message, code } = (err ?? {}) as { message?: string; code?: string };
+  console.error(`Migration failed${code ? ` [${code}]` : ""}: ${message ?? "unknown error"}`);
   process.exit(1);
 });
