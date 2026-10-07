@@ -4,7 +4,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 const nextConfig: NextConfig = {
   // pdf.js loads its worker from a file next to itself; bundled, that file
   // is missing and every PDF fails. Load these from node_modules instead.
-  serverExternalPackages: ["pdf-parse", "pdfjs-dist"],
+  // @napi-rs/canvas is native and provides pdf.js's DOM polyfills on the server.
+  serverExternalPackages: ["pdf-parse", "pdfjs-dist", "@napi-rs/canvas"],
   experimental: {
     serverActions: {
       // Default is 1 MB. Kept under Vercel's 4.5 MB request-body cap; resume

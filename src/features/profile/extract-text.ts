@@ -1,6 +1,14 @@
+// Must load before pdf-parse: it installs the DOMMatrix/ImageData/Path2D
+// polyfills pdfjs-dist needs at import time. Without them the module throws
+// on serverless (Vercel) and the whole route 500s.
+import { CanvasFactory, getData } from "pdf-parse/worker";
 import mammoth from "mammoth";
 import { PDFParse } from "pdf-parse";
 import { MAX_FILE_BYTES } from "./upload-limits";
+
+// Inline the pdf.js worker so it doesn't depend on output file tracing
+// copying pdf.worker.mjs into the deployment.
+PDFParse.setWorker(getData());
 
 export { MAX_FILE_BYTES };
 // A resume is a few thousand characters; this guards the model call, and an
@@ -53,7 +61,7 @@ export async function extractResumeText(
   let raw: string;
   try {
     if (kind === "pdf") {
-      const parser = new PDFParse({ data: bytes });
+      const parser = new PDFParse({ data: bytes, CanvasFactory });
       try {
         raw = (await parser.getText()).text;
       } finally {
