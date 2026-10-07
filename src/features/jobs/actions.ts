@@ -2,6 +2,7 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { getLocale } from "next-intl/server";
+import { VoyageAIError } from "voyageai";
 import { z } from "zod";
 import { createJob as insertJob, getJob } from "@/db/queries/jobs";
 import { insertMatch } from "@/db/queries/matches";
@@ -73,7 +74,12 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
         .filter(Boolean)
         .join("\n"),
     );
-  } catch {
+  } catch (err) {
+    // Status code and error class only; the body can echo the posting text.
+    console.error("embedDocument failed", {
+      name: err instanceof Error ? err.name : typeof err,
+      status: err instanceof VoyageAIError ? err.statusCode : undefined,
+    });
     return { ok: false, error: "embedFailed" };
   }
 
