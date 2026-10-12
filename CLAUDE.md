@@ -19,7 +19,7 @@ AI assistant that helps a job seeker find relevant positions, tailor their resum
 - `pnpm db:generate` — generate migration from schema changes
 - `pnpm db:migrate` — apply migrations
 - `pnpm eval` — run prompt evals in `evals/`
-- Local DB: Docker container `jsa-db` on port 55432 (5432/5433 are taken by local Postgres installs)
+- DB: Neon (hosted Postgres + pgvector); `DATABASE_URL` in `.env.local` is used by both `pnpm dev` and drizzle-kit, so migrations run against Neon
 
 ## Project layout
 ```
