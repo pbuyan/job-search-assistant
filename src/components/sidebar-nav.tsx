@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 const items = [
@@ -20,6 +21,8 @@ const items = [
 export function SidebarNav() {
   const t = useTranslations("Nav");
   const pathname = usePathname();
+  // On mobile the sidebar is a modal sheet; close it once a destination is chosen.
+  const { setOpenMobile } = useSidebar();
 
   return (
     <SidebarGroup>
@@ -30,7 +33,7 @@ export function SidebarNav() {
               <SidebarMenuButton
                 isActive={pathname === href || pathname.startsWith(`${href}/`)}
                 tooltip={t(key)}
-                render={<Link href={href} />}
+                render={<Link href={href} onClick={() => setOpenMobile(false)} />}
               >
                 <Icon />
                 <span>{t(key)}</span>

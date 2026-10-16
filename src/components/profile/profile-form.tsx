@@ -31,7 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { saveProfile } from "@/features/profile/actions";
 import { diffProfiles, type ProfileDiff } from "@/features/profile/diff";
-import { normalizeProfile } from "@/features/profile/normalize";
+import { normalizeProfile, toFormValues } from "@/features/profile/normalize";
 import {
   profileSaveSchema,
   RESUME_LANGUAGES,
@@ -64,7 +64,7 @@ export function ProfileForm({ initial }: { initial: ProfileSaveInput }) {
     formState: { errors, isDirty },
   } = useForm<ProfileSaveInput>({
     resolver: zodResolver(profileSaveSchema),
-    defaultValues: initial,
+    defaultValues: { ...initial, data: toFormValues(initial.data) },
   });
 
   const work = useFieldArray({ control, name: "data.work", keyName: "_key" });
@@ -88,7 +88,10 @@ export function ProfileForm({ initial }: { initial: ProfileSaveInput }) {
       });
       if (!result.ok) return setStatus(result.error);
       // Adopt what the server stored (it may have minted ids).
-      reset({ language: result.language as ResumeLanguage, data: result.data });
+      reset({
+        language: result.language as ResumeLanguage,
+        data: toFormValues(result.data),
+      });
       setProposal(null);
       setStatus("saved");
     });

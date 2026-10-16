@@ -1,3 +1,4 @@
+import { StrictMode } from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider } from "next-intl";
@@ -31,9 +32,11 @@ const initial: ProfileSaveInput = {
 
 function renderForm() {
   return render(
-    <NextIntlClientProvider locale="en" messages={messages}>
-      <ProfileForm initial={initial} />
-    </NextIntlClientProvider>,
+    <StrictMode>
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <ProfileForm initial={initial} />
+      </NextIntlClientProvider>
+    </StrictMode>,
   );
 }
 
@@ -115,6 +118,18 @@ describe("ProfileForm", () => {
     expect(sent.data.certifications).toEqual([{ name: "Kept untouched" }]);
     expect(sent.data.work[0].id).toBe("work-id-0001");
     expect(sent.language).toBe("fr");
+  });
+
+  // `initial` leaves optional fields (end date, headline, ...) undefined.
+  it("starts clean, so Save is disabled until something is edited", async () => {
+    const user = userEvent.setup();
+    renderForm();
+    const save = screen.getByRole("button", { name: "Save profile" });
+    // Field-array inputs register after mount; let the form settle first.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(save).toBeDisabled();
+    await user.type(screen.getByLabelText("Headline"), "Engineer");
+    expect(save).toBeEnabled();
   });
 
   it("shows translated validation errors and does not call the action", async () => {

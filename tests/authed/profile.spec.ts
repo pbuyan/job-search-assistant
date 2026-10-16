@@ -10,7 +10,13 @@ test("edits, saves and reloads the master profile", async ({ page }) => {
   await page.goto("/en/profile");
   const save = page.getByRole("button", { name: "Save profile" });
 
-  await page.getByLabel("Full name").fill(name);
+  // The first edit can land mid-hydration, when the form re-applies stored
+  // values to its inputs (twice in dev); retry until the new value sticks.
+  const fullName = page.getByLabel("Full name");
+  await expect(async () => {
+    await fullName.fill(name);
+    await expect(fullName).toHaveValue(name, { timeout: 1_000 });
+  }).toPass();
   await page.getByLabel("Headline").fill("Senior Software Engineer");
   await page.getByLabel("Email").fill("e2e@example.com");
 
@@ -18,13 +24,15 @@ test("edits, saves and reloads the master profile", async ({ page }) => {
   const removeWork = page.getByRole("button", { name: /^Remove position \d+$/ });
   while ((await removeWork.count()) > 0) await removeWork.first().click();
 
+  // Scoped to the work section: education entries also have date fields.
+  const work = page.getByRole("region", { name: "Work experience" });
   await page.getByRole("button", { name: "Add position" }).click();
-  await page.getByLabel("Company").fill("Acme Corp");
-  await page.getByLabel("Job title").fill("Software Engineer");
-  await page.getByLabel("Start date").fill("2020-01");
+  await work.getByLabel("Company").fill("Acme Corp");
+  await work.getByLabel("Job title").fill("Software Engineer");
+  await work.getByLabel("Start date").fill("2020-01");
   await page.getByRole("button", { name: "Add achievement" }).click();
   await page
-    .getByLabel("Achievement 1")
+    .getByLabel("Achievement 1", { exact: true })
     .fill("Cut checkout latency by 40% by moving pricing to an edge cache");
 
   await expect(save).toBeEnabled();
@@ -35,8 +43,8 @@ test("edits, saves and reloads the master profile", async ({ page }) => {
 
   await page.reload();
   await expect(page.getByLabel("Full name")).toHaveValue(name);
-  await expect(page.getByLabel("Company")).toHaveValue("Acme Corp");
-  await expect(page.getByLabel("Achievement 1")).toHaveValue(
+  await expect(work.getByLabel("Company")).toHaveValue("Acme Corp");
+  await expect(page.getByLabel("Achievement 1", { exact: true })).toHaveValue(
     "Cut checkout latency by 40% by moving pricing to an edge cache",
   );
 });

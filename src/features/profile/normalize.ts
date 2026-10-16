@@ -56,3 +56,33 @@ export function normalizeProfile(data: ProfileDataInput): ProfileDataInput {
     })),
   };
 }
+
+// The form-side inverse: blank optional fields are stored as undefined, but
+// their inputs report "". Defaulting them to "" keeps a just-loaded (or
+// just-saved) profile from counting as dirty; normalizeProfile undoes it.
+export function toFormValues(data: ProfileDataInput): ProfileDataInput {
+  const blank = (value: string | undefined) => value ?? "";
+  return {
+    ...data,
+    basics: {
+      ...data.basics,
+      label: blank(data.basics.label),
+      email: blank(data.basics.email),
+      phone: blank(data.basics.phone),
+      location: blank(data.basics.location),
+      summary: blank(data.basics.summary),
+    },
+    work: data.work.map((job) => ({
+      ...job,
+      endDate: blank(job.endDate),
+      location: blank(job.location),
+    })),
+    education: data.education?.map((ed) => ({
+      ...ed,
+      area: blank(ed.area),
+      studyType: blank(ed.studyType),
+      startDate: blank(ed.startDate),
+      endDate: blank(ed.endDate),
+    })),
+  };
+}

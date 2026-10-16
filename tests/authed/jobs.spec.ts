@@ -1,6 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test.describe("add a job form", () => {
+  // Scoped to main: Next's route announcer is also role="alert".
+  const formError = (page: Page) => page.getByRole("main").getByRole("alert");
+
   test.beforeEach(async ({ page }) => {
     await page.goto("/en/jobs");
     await page.getByRole("link", { name: "Add a job" }).click();
@@ -29,7 +32,7 @@ test.describe("add a job form", () => {
   test("rejects a non-http link", async ({ page }) => {
     await page.getByLabel("Posting URL").fill("ftp://example.com/job");
     await page.getByRole("button", { name: "Add job" }).click();
-    await expect(page.getByRole("alert")).toHaveText(
+    await expect(formError(page)).toHaveText(
       "Enter a full http:// or https:// link.",
     );
   });
@@ -39,7 +42,7 @@ test.describe("add a job form", () => {
       .getByLabel("Posting URL")
       .fill("https://www.linkedin.com/jobs/view/1234567890");
     await page.getByRole("button", { name: "Add job" }).click();
-    await expect(page.getByRole("alert")).toHaveText(
+    await expect(formError(page)).toHaveText(
       "This site doesn't allow automated access. Copy the job description and paste it instead.",
     );
   });
@@ -48,7 +51,7 @@ test.describe("add a job form", () => {
     await page.getByRole("tab", { name: "Paste text" }).click();
     await page.getByLabel("Job description").fill("Backend engineer");
     await page.getByRole("button", { name: "Add job" }).click();
-    await expect(page.getByRole("alert")).toHaveText(
+    await expect(formError(page)).toHaveText(
       "That's too short to be a job description. Paste the full posting.",
     );
   });
