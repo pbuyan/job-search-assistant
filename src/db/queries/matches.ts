@@ -1,6 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { jobMatches, type FitAnalysis } from "@/db/schema";
+import { jobMatches, jobs, type FitAnalysis } from "@/db/schema";
 
 export async function insertMatch(
   userId: string,
@@ -30,4 +30,31 @@ export async function getLatestMatch(userId: string, jobId: string) {
     .orderBy(desc(jobMatches.createdAt))
     .limit(1);
   return row ?? null;
+}
+
+// Latest score per job, most recently analyzed first.
+export async function listRecentMatches(userId: string, limit = 5) {
+  const latest = db
+    .selectDistinctOn([jobMatches.jobId], {
+      jobId: jobMatches.jobId,
+      score: jobMatches.score,
+      createdAt: jobMatches.createdAt,
+    })
+    .from(jobMatches)
+    .where(eq(jobMatches.userId, userId))
+    .orderBy(jobMatches.jobId, desc(jobMatches.createdAt))
+    .as("latest");
+
+  return db
+    .select({
+      jobId: latest.jobId,
+      score: latest.score,
+      createdAt: latest.createdAt,
+      title: jobs.title,
+      company: jobs.company,
+    })
+    .from(latest)
+    .innerJoin(jobs, and(eq(jobs.id, latest.jobId), eq(jobs.userId, userId)))
+    .orderBy(desc(latest.createdAt))
+    .limit(limit);
 }

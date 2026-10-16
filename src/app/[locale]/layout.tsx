@@ -5,10 +5,11 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { ClerkProvider } from "@clerk/nextjs";
 import { frFR } from "@clerk/localizations";
-import { shadcn } from "@clerk/ui/themes";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { routing } from "@/i18n/routing";
+import { clerkAppearance } from "@/lib/clerk-appearance";
+import { pageMetadata } from "@/lib/metadata";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -41,8 +42,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
-  const t = await getTranslations({ locale, namespace: "Common" });
-  return { title: t("appName") };
+  const [tc, base] = await Promise.all([
+    getTranslations({ locale, namespace: "Common" }),
+    pageMetadata({ locale, page: "landing", path: "/" }),
+  ]);
+  // Defaults for every page in this locale; pages override title/description.
+  return {
+    ...base,
+    title: { template: `%s | ${tc("appName")}`, default: tc("appName") },
+  };
 }
 
 export default async function LocaleLayout({
@@ -59,7 +67,7 @@ export default async function LocaleLayout({
   return (
     <ClerkProvider
       localization={locale === "fr" ? frFR : undefined}
-      appearance={{ theme: shadcn }}
+      appearance={clerkAppearance}
     >
       {/* next-themes sets the class on <html> before hydration. */}
       <html

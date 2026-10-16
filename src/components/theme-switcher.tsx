@@ -3,21 +3,20 @@ import { useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const themes = [
   { value: "system", labelKey: "themeSystem", Icon: MonitorIcon },
   { value: "light", labelKey: "themeLight", Icon: SunIcon },
   { value: "dark", labelKey: "themeDark", Icon: MoonIcon },
 ] as const;
-
-type Theme = (typeof themes)[number]["value"];
 
 const noopSubscribe = () => () => {};
 
@@ -32,38 +31,29 @@ export function ThemeSwitcher() {
     () => false,
   );
   const current = mounted ? themes.find((th) => th.value === theme) : undefined;
+  const TriggerIcon = current?.Icon ?? MonitorIcon;
 
   return (
-    <Select
-      items={themes.map((th) => ({ value: th.value, label: t(th.labelKey) }))}
-      value={current?.value ?? null}
-      disabled={!mounted}
-      onValueChange={(next) => {
-        if (next) setTheme(next as Theme);
-      }}
-    >
-      <SelectTrigger className="w-full" aria-label={t("theme")}>
-        <SelectValue>
-          {() =>
-            current ? (
-              <>
-                <current.Icon aria-hidden />
-                {t(current.labelKey)}
-              </>
-            ) : (
-              t("theme")
-            )
-          }
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        {themes.map(({ value, labelKey, Icon }) => (
-          <SelectItem key={value} value={value}>
-            <Icon aria-hidden />
-            {t(labelKey)}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        disabled={!mounted}
+        render={<Button variant="ghost" size="icon" aria-label={t("theme")} />}
+      >
+        <TriggerIcon aria-hidden />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-auto min-w-36">
+        <DropdownMenuRadioGroup
+          value={current?.value ?? ""}
+          onValueChange={(next: string) => setTheme(next)}
+        >
+          {themes.map(({ value, labelKey, Icon }) => (
+            <DropdownMenuRadioItem key={value} value={value}>
+              <Icon aria-hidden />
+              {t(labelKey)}
+            </DropdownMenuRadioItem>
+          ))}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

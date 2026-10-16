@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -7,6 +8,17 @@ import { getBoard } from "@/db/queries/applications";
 import { APPLICATION_STATUSES } from "@/features/tracker/board";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { pageMetadata } from "@/lib/metadata";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+  return pageMetadata({ locale, page: "tracker", path: "/tracker" });
+}
 
 export default async function TrackerPage({
   params,

@@ -10,7 +10,7 @@ test.describe("landing page", () => {
 
   test("shows the English landing with sign-in links", async ({ page }) => {
     await page.goto("/en");
-    await expect(page).toHaveTitle("Job Search Assistant");
+    await expect(page).toHaveTitle("Job Search Assistant: find the right job, faster");
     await expect(
       page.getByRole("heading", { level: 1, name: "Find the right job, faster" }),
     ).toBeVisible();
@@ -28,7 +28,9 @@ test.describe("landing page", () => {
   test("shows the French landing", async ({ page }) => {
     await page.goto("/fr");
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-    await expect(page).toHaveTitle("Assistant de recherche d'emploi");
+    await expect(page).toHaveTitle(
+      "Assistant de recherche d'emploi : trouvez le bon emploi, plus vite",
+    );
     await expect(
       page.getByRole("heading", {
         level: 1,
@@ -44,8 +46,8 @@ test.describe("landing page", () => {
 
   test("switches language from the landing page", async ({ page }) => {
     await page.goto("/en");
-    await page.getByRole("combobox", { name: "Language" }).click();
-    await page.getByRole("option", { name: "Français" }).click();
+    await page.getByRole("button", { name: "Language" }).click();
+    await page.getByRole("menuitemradio", { name: "Français" }).click();
     await expect(page).toHaveURL(/\/fr$/);
     await expect(
       page.getByRole("heading", { name: "Trouvez le bon emploi, plus vite" }),

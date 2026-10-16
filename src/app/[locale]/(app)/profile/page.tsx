@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -7,6 +8,7 @@ import { getProfile } from "@/db/queries/profile";
 import { RESUME_LANGUAGES, type ProfileSaveInput } from "@/features/profile/schemas";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { pageMetadata } from "@/lib/metadata";
 
 const emptyProfile: ProfileSaveInput = {
   // Resume language is its own setting; a new profile starts at the default
@@ -14,6 +16,16 @@ const emptyProfile: ProfileSaveInput = {
   language: "en",
   data: { basics: { name: "" }, work: [], education: [], skills: [] },
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+  return pageMetadata({ locale, page: "profile", path: "/profile" });
+}
 
 export default async function ProfilePage({
   params,

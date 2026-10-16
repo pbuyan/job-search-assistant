@@ -20,11 +20,11 @@ export async function AppSidebar() {
       <SidebarContent>
         <SidebarNav />
       </SidebarContent>
-      <SidebarFooter className="gap-3">
-        <ThemeSwitcher />
-        <LanguageSwitcher />
-        <div className="px-1">
-          <UserButton />
+      <SidebarFooter className="flex-row items-center justify-between gap-2 px-3">
+        <UserButton />
+        <div className="flex items-center gap-1">
+          <ThemeSwitcher />
+          <LanguageSwitcher />
         </div>
       </SidebarFooter>
     </Sidebar>

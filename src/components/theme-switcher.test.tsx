@@ -26,20 +26,39 @@ describe("ThemeSwitcher", () => {
     theme.current = "system";
   });
 
-  it("shows the stored theme in the user's language", () => {
+  it("checks the stored theme, labelled in the user's language", async () => {
+    const user = userEvent.setup();
     theme.current = "dark";
     renderSwitcher("fr");
-    expect(screen.getByRole("combobox", { name: "Thème" })).toHaveTextContent("Sombre");
+    await user.click(screen.getByRole("button", { name: "Thème" }));
+    expect(
+      await screen.findByRole("menuitemradio", { name: "Sombre" }),
+    ).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("menuitemradio", { name: "Clair" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
   });
 
   it("sets the chosen theme", async () => {
     const user = userEvent.setup();
     renderSwitcher();
-    await user.click(screen.getByRole("combobox", { name: "Theme" }));
+    await user.click(screen.getByRole("button", { name: "Theme" }));
     for (const label of ["System", "Light", "Dark"]) {
-      expect(await screen.findByRole("option", { name: label })).toBeInTheDocument();
+      expect(
+        await screen.findByRole("menuitemradio", { name: label }),
+      ).toBeInTheDocument();
     }
-    await user.click(screen.getByRole("option", { name: "Light" }));
+    await user.click(screen.getByRole("menuitemradio", { name: "Light" }));
     expect(setTheme).toHaveBeenCalledWith("light");
+  });
+
+  it("opens from the keyboard", async () => {
+    const user = userEvent.setup();
+    renderSwitcher();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Theme" })).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(await screen.findByRole("menu")).toBeInTheDocument();
   });
 });

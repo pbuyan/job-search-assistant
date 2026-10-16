@@ -7,7 +7,8 @@
     "theme": "Theme",
     "themeSystem": "System",
     "themeLight": "Light",
-    "themeDark": "Dark"
+    "themeDark": "Dark",
+    "loading": "Loading…"
   },
   "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker" },
   "Sidebar": {
@@ -20,7 +21,108 @@
     "subtitle": "Match jobs to your experience, tailor your resume, track every application.",
     "goToDashboard": "Go to dashboard"
   },
-  "Dashboard": { "title": "Dashboard", "empty": "Your job search overview will appear here." },
+  "Errors": {
+    "title": "Something went wrong",
+    "body": "This page couldn't be loaded. Try again, or go back to the home page.",
+    "retry": "Try again",
+    "home": "Go to the home page",
+    "notFound": {
+      "title": "Page not found",
+      "body": "The page you're looking for doesn't exist or has moved."
+    }
+  },
+  "Meta": {
+    "landing": {
+      "title": "Job Search Assistant: find the right job, faster",
+      "description": "Import your resume, paste job postings, get fit scores with reasons, and track every application in one place."
+    },
+    "signIn": {
+      "title": "Sign in",
+      "description": "Sign in to see your job matches, fit scores and applications."
+    },
+    "signUp": {
+      "title": "Sign up",
+      "description": "Create an account to match jobs to your experience and track your applications."
+    },
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "An overview of your job search: applications, upcoming next steps and recent fit scores."
+    },
+    "profile": {
+      "title": "Profile",
+      "description": "Your master profile, the source for every tailored resume."
+    },
+    "jobs": {
+      "title": "Jobs",
+      "description": "Jobs you have added, with their extracted requirements and fit with your profile."
+    },
+    "tracker": {
+      "title": "Tracker",
+      "description": "Track each application from saved to offer."
+    }
+  },
+  "Auth": { "tagline": "Match jobs to your experience and track every application." },
+  "Landing": {
+    "howItWorks": { "title": "How it works" },
+    "steps": {
+      "import": {
+        "title": "Import your resume",
+        "body": "Upload a PDF or Word file. You review the extracted profile before anything is saved."
+      },
+      "paste": {
+        "title": "Paste a job posting",
+        "body": "Add a link or paste the description, and the requirements are extracted for you."
+      },
+      "score": {
+        "title": "Get a fit score with reasons",
+        "body": "See which requirements you meet, the evidence from your profile, and where the gaps are."
+      },
+      "track": {
+        "title": "Track every application",
+        "body": "Move each application across your board, from saved to offer, with next steps and due dates."
+      }
+    },
+    "privacy": {
+      "title": "How your resume is used",
+      "body": "Your resume is used only to match you with jobs and tailor your applications. It is not shared with other users or sold. To do this, its text is processed by Claude (Anthropic)."
+    },
+    "footer": { "copyright": "© {year} {appName}" }
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "onboarding": {
+      "title": "Get started",
+      "intro": "Three steps to set up your job search.",
+      "progress": "{done} of {total} done",
+      "profile": {
+        "title": "Add your profile",
+        "body": "Import a resume or enter your experience."
+      },
+      "job": {
+        "title": "Add a job",
+        "body": "Paste a posting link or its description."
+      },
+      "application": {
+        "title": "Track an application",
+        "body": "Add a job to your tracker from its page."
+      },
+      "done": "Done",
+      "notDone": "Not done"
+    },
+    "cards": {
+      "byStatus": "Applications by status",
+      "byStatusCount": "{count, plural, one {# application} other {# applications}}",
+      "noApplications": "No applications yet.",
+      "nextSteps": "Next steps this week",
+      "noNextSteps": "Nothing due in the next 7 days.",
+      "due": "Due {date}",
+      "recentScores": "Recent fit scores",
+      "noScores": "No jobs analyzed yet.",
+      "score": "{score}/100",
+      "untitled": "Untitled job",
+      "openTracker": "Open tracker"
+    }
+  },
   "Profile": {
     "title": "Profile",
     "description": "Your master profile. Tailored resumes only reorder, trim and reword what is here.",

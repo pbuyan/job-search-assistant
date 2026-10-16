@@ -7,7 +7,8 @@
     "theme": "Thème",
     "themeSystem": "Système",
     "themeLight": "Clair",
-    "themeDark": "Sombre"
+    "themeDark": "Sombre",
+    "loading": "Chargement…"
   },
   "Nav": { "dashboard": "Tableau de bord", "profile": "Profil", "jobs": "Emplois", "tracker": "Suivi" },
   "Sidebar": {
@@ -20,7 +21,108 @@
     "subtitle": "Associez les offres à votre expérience, adaptez votre CV et suivez chaque candidature.",
     "goToDashboard": "Aller au tableau de bord"
   },
-  "Dashboard": { "title": "Tableau de bord", "empty": "L'aperçu de votre recherche d'emploi s'affichera ici." },
+  "Errors": {
+    "title": "Une erreur s'est produite",
+    "body": "Cette page n'a pas pu être chargée. Réessayez ou retournez à la page d'accueil.",
+    "retry": "Réessayer",
+    "home": "Aller à la page d'accueil",
+    "notFound": {
+      "title": "Page introuvable",
+      "body": "La page que vous cherchez n'existe pas ou a été déplacée."
+    }
+  },
+  "Meta": {
+    "landing": {
+      "title": "Assistant de recherche d'emploi : trouvez le bon emploi, plus vite",
+      "description": "Importez votre CV, collez des offres d'emploi, obtenez des scores d'adéquation motivés et suivez toutes vos candidatures au même endroit."
+    },
+    "signIn": {
+      "title": "Connexion",
+      "description": "Connectez-vous pour voir vos offres associées, vos scores d'adéquation et vos candidatures."
+    },
+    "signUp": {
+      "title": "Créer un compte",
+      "description": "Créez un compte pour associer des offres à votre expérience et suivre vos candidatures."
+    },
+    "dashboard": {
+      "title": "Tableau de bord",
+      "description": "Un aperçu de votre recherche d'emploi : candidatures, prochaines étapes et scores d'adéquation récents."
+    },
+    "profile": {
+      "title": "Profil",
+      "description": "Votre profil principal, la source de chaque CV adapté."
+    },
+    "jobs": {
+      "title": "Emplois",
+      "description": "Les offres que vous avez ajoutées, avec leurs exigences extraites et leur adéquation avec votre profil."
+    },
+    "tracker": {
+      "title": "Suivi",
+      "description": "Suivez chaque candidature, de l'enregistrement à l'offre."
+    }
+  },
+  "Auth": { "tagline": "Associez les offres à votre expérience et suivez chaque candidature." },
+  "Landing": {
+    "howItWorks": { "title": "Comment ça fonctionne" },
+    "steps": {
+      "import": {
+        "title": "Importez votre CV",
+        "body": "Téléversez un fichier PDF ou Word. Vous vérifiez le profil extrait avant que quoi que ce soit soit enregistré."
+      },
+      "paste": {
+        "title": "Collez une offre d'emploi",
+        "body": "Ajoutez un lien ou collez la description; les exigences sont extraites pour vous."
+      },
+      "score": {
+        "title": "Obtenez un score d'adéquation motivé",
+        "body": "Voyez les exigences que vous remplissez, les preuves tirées de votre profil et les lacunes à combler."
+      },
+      "track": {
+        "title": "Suivez chaque candidature",
+        "body": "Déplacez chaque candidature sur votre tableau, de « Enregistrée » à « Offre », avec les prochaines étapes et leurs échéances."
+      }
+    },
+    "privacy": {
+      "title": "Utilisation de votre CV",
+      "body": "Votre CV sert uniquement à vous associer à des offres et à adapter vos candidatures. Il n'est ni communiqué à d'autres utilisateurs ni vendu. Pour ce faire, son texte est traité par Claude (Anthropic)."
+    },
+    "footer": { "copyright": "© {year} {appName}" }
+  },
+  "Dashboard": {
+    "title": "Tableau de bord",
+    "onboarding": {
+      "title": "Pour commencer",
+      "intro": "Trois étapes pour préparer votre recherche d'emploi.",
+      "progress": "{done} sur {total} terminées",
+      "profile": {
+        "title": "Ajoutez votre profil",
+        "body": "Importez un CV ou saisissez votre expérience."
+      },
+      "job": {
+        "title": "Ajoutez un emploi",
+        "body": "Collez le lien d'une offre ou sa description."
+      },
+      "application": {
+        "title": "Suivez une candidature",
+        "body": "Ajoutez un emploi à votre suivi depuis sa page."
+      },
+      "done": "Terminé",
+      "notDone": "À faire"
+    },
+    "cards": {
+      "byStatus": "Candidatures par statut",
+      "byStatusCount": "{count, plural, one {# candidature} other {# candidatures}}",
+      "noApplications": "Aucune candidature pour l'instant.",
+      "nextSteps": "Prochaines étapes cette semaine",
+      "noNextSteps": "Rien n'est prévu dans les 7 prochains jours.",
+      "due": "Échéance : {date}",
+      "recentScores": "Scores d'adéquation récents",
+      "noScores": "Aucun emploi analysé pour l'instant.",
+      "score": "{score}/100",
+      "untitled": "Emploi sans titre",
+      "openTracker": "Ouvrir le suivi"
+    }
+  },
   "Profile": {
     "title": "Profil",
     "description": "Votre profil principal. Les CV adaptés ne font que réorganiser, raccourcir et reformuler ce qui s'y trouve.",

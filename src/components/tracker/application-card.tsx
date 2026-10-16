@@ -3,16 +3,11 @@ import { CalendarClock } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { cn } from "cn";
 import { Badge } from "@/components/ui/badge";
-import type { BoardCard } from "@/features/tracker/board";
+import { dueDate, type BoardCard } from "@/features/tracker/board";
 import { Link } from "@/i18n/navigation";
 
 // next_step_due is a calendar date with no time zone; format it as UTC so it
 // never shifts by a day in the viewer's zone.
-function dueDate(value: string) {
-  const [y, m, d] = value.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d));
-}
-
 export function ApplicationCard({
   card,
   overlay = false,

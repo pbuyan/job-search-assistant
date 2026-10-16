@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { Plus } from "lucide-react";
 import { hasLocale } from "next-intl";
@@ -11,6 +12,17 @@ import { buttonVariants } from "@/components/ui/button";
 import { listJobs } from "@/db/queries/jobs";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
+import { pageMetadata } from "@/lib/metadata";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+  return pageMetadata({ locale, page: "jobs", path: "/jobs" });
+}
 
 export default async function JobsPage({
   params,

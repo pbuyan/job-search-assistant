@@ -29,6 +29,12 @@ export type BoardCard = {
 
 export type Board = Record<ApplicationStatus, BoardCard[]>;
 
+// A date column value as UTC midnight; format it with timeZone: "UTC".
+export function dueDate(value: string) {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
 export const columnId = (status: ApplicationStatus) => `column:${status}`;
 
 export function isStatus(value: unknown): value is ApplicationStatus {
