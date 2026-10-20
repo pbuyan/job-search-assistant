@@ -51,9 +51,14 @@ test("edits, saves and reloads the master profile", async ({ page }) => {
 
 test("blocks saving an invalid profile", async ({ page }) => {
   await page.goto("/en/profile");
-  await page.getByLabel("Full name").fill("");
+  // Same hydration race as above: retry until the cleared value sticks.
+  const fullName = page.getByLabel("Full name");
+  await expect(async () => {
+    await fullName.fill("");
+    await expect(fullName).toHaveValue("", { timeout: 1_000 });
+  }).toPass();
   await page.getByRole("button", { name: "Save profile" }).click();
-  await expect(page.getByLabel("Full name")).toHaveAttribute(
+  await expect(fullName).toHaveAttribute(
     "aria-invalid",
     "true",
   );
