@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { gotoSignedIn } from "../support";
 
 // Overwrites the test user's master profile. Use a dedicated Clerk user.
 test.describe.configure({ mode: "serial" });
@@ -7,7 +8,7 @@ test("edits, saves and reloads the master profile", async ({ page }) => {
   const stamp = Date.now();
   const name = `E2E Tester ${stamp}`;
 
-  await page.goto("/en/profile");
+  await gotoSignedIn(page, "/en/profile");
   const save = page.getByRole("button", { name: "Save profile" });
 
   // The first edit can land mid-hydration, when the form re-applies stored
@@ -21,7 +22,9 @@ test("edits, saves and reloads the master profile", async ({ page }) => {
   await page.getByLabel("Email").fill("e2e@example.com");
 
   // Replace any experience from earlier runs with one known position.
-  const removeWork = page.getByRole("button", { name: /^Remove position \d+$/ });
+  const removeWork = page.getByRole("button", {
+    name: /^Remove position \d+$/,
+  });
   while ((await removeWork.count()) > 0) await removeWork.first().click();
 
   // Scoped to the work section: education entries also have date fields.
@@ -50,7 +53,7 @@ test("edits, saves and reloads the master profile", async ({ page }) => {
 });
 
 test("blocks saving an invalid profile", async ({ page }) => {
-  await page.goto("/en/profile");
+  await gotoSignedIn(page, "/en/profile");
   // Same hydration race as above: retry until the cleared value sticks.
   const fullName = page.getByLabel("Full name");
   await expect(async () => {
@@ -58,9 +61,6 @@ test("blocks saving an invalid profile", async ({ page }) => {
     await expect(fullName).toHaveValue("", { timeout: 1_000 });
   }).toPass();
   await page.getByRole("button", { name: "Save profile" }).click();
-  await expect(fullName).toHaveAttribute(
-    "aria-invalid",
-    "true",
-  );
+  await expect(fullName).toHaveAttribute("aria-invalid", "true");
   await expect(page.getByRole("status")).not.toHaveText("Profile saved.");
 });

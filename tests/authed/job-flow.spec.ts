@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { gotoSignedIn } from "../support";
 
 // Full journey through the real AI pipeline (Claude + Voyage): slow and billed,
 // so opt-in with E2E_AI=1. Needs the profile saved by profile.spec.ts. Each run
@@ -27,7 +28,7 @@ Nice to have
 - Experience with edge caching or CDNs`;
 
 test("pastes a posting, analyzes fit, and tracks it", async ({ page }) => {
-  await page.goto("/en/jobs/new");
+  await gotoSignedIn(page, "/en/jobs/new");
   await page.getByRole("tab", { name: "Paste text" }).click();
   await page.getByLabel("Job description").fill(POSTING);
   await page.getByRole("button", { name: "Add job" }).click();
@@ -55,6 +56,8 @@ test("pastes a posting, analyzes fit, and tracks it", async ({ page }) => {
   await expect(page).toHaveURL(/\/en\/tracker$/);
   await expect(page.getByText(jobTitle).first()).toBeVisible();
 
-  await page.goto("/en/jobs");
-  await expect(page.locator(`a[href="${new URL(jobUrl).pathname}"]`)).toBeVisible();
+  await gotoSignedIn(page, "/en/jobs");
+  await expect(
+    page.locator(`a[href="${new URL(jobUrl).pathname}"]`),
+  ).toBeVisible();
 });

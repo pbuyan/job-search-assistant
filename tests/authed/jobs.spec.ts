@@ -1,11 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
+import { gotoSignedIn } from "../support";
 
 test.describe("add a job form", () => {
   // Scoped to main: Next's route announcer is also role="alert".
   const formError = (page: Page) => page.getByRole("main").getByRole("alert");
 
   test.beforeEach(async ({ page }) => {
-    await page.goto("/en/jobs");
+    await gotoSignedIn(page, "/en/jobs");
     await page.getByRole("link", { name: "Add a job" }).click();
     await expect(page).toHaveURL(/\/en\/jobs\/new$/);
   });
