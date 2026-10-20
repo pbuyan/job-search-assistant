@@ -56,6 +56,10 @@
       "title": "Emplois",
       "description": "Les offres que vous avez ajoutées, avec leurs exigences extraites et leur adéquation avec votre profil."
     },
+    "newJob": {
+      "title": "Ajouter un emploi",
+      "description": "Ajoutez une offre d'emploi par lien ou texte collé pour en extraire les exigences et évaluer votre adéquation."
+    },
     "tracker": {
       "title": "Suivi",
       "description": "Suivez chaque candidature, de l'enregistrement à l'offre."

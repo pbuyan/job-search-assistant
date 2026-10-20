@@ -1,11 +1,23 @@
+import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { NewJobForm } from "@/components/jobs/new-job-form";
 import { routing } from "@/i18n/routing";
+import { pageMetadata } from "@/lib/metadata";
 
 // Fetching, parsing and embedding a posting can take a while.
 export const maxDuration = 120;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+  return pageMetadata({ locale, page: "newJob", path: "/jobs/new" });
+}
 
 export default async function NewJobPage({
   params,

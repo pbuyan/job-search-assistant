@@ -56,6 +56,10 @@
       "title": "Jobs",
       "description": "Jobs you have added, with their extracted requirements and fit with your profile."
     },
+    "newJob": {
+      "title": "Add a job",
+      "description": "Add a job posting by link or pasted text to extract its requirements and check your fit."
+    },
     "tracker": {
       "title": "Tracker",
       "description": "Track each application from saved to offer."

@@ -9,6 +9,7 @@ export type MetaPage =
   | "dashboard"
   | "profile"
   | "jobs"
+  | "newJob"
   | "tracker";
 
 const ogLocales: Record<Locale, string> = { en: "en_CA", fr: "fr_CA" };
