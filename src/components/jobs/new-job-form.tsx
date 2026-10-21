@@ -32,9 +32,13 @@ export function NewJobForm() {
         return;
       }
       setError(result.error);
-      // The page couldn't be read as a posting: keep the URL as a reference
-      // and let the user paste the description instead.
-      if (result.error === "needsPaste") setMode("text");
+      // The page (or the Greenhouse API) couldn't give us the posting: keep
+      // the URL as a reference and let the user paste the description instead.
+      if (
+        result.error === "needsPaste" ||
+        result.error === "greenhouseUnavailable"
+      )
+        setMode("text");
     });
   }
 

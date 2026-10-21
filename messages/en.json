@@ -246,6 +246,8 @@
         "timeout": "The site took too long to respond. Try again or paste the text.",
         "fetchFailed": "The page couldn't be loaded. Check the link, or paste the text instead.",
         "needsPaste": "We couldn't find the job description on that page. Paste it below; we kept the link.",
+        "postingGone": "This posting is no longer available.",
+        "greenhouseUnavailable": "We couldn't load this posting from Greenhouse. Paste the job description below; we kept the link.",
         "tooShort": "That's too short to be a job description. Paste the full posting.",
         "tooLong": "That's too long to be a single job posting.",
         "parseFailed": "The posting couldn't be processed. Try again.",

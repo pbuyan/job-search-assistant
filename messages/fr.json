@@ -246,6 +246,8 @@
         "timeout": "Le site a mis trop de temps à répondre. Réessayez ou collez le texte.",
         "fetchFailed": "La page n'a pas pu être chargée. Vérifiez le lien ou collez plutôt le texte.",
         "needsPaste": "Nous n'avons pas trouvé la description du poste sur cette page. Collez-la ci-dessous; nous avons conservé le lien.",
+        "postingGone": "Cette offre n'est plus disponible.",
+        "greenhouseUnavailable": "Nous n'avons pas pu charger cette offre depuis Greenhouse. Collez la description du poste ci-dessous; nous avons conservé le lien.",
         "tooShort": "C'est trop court pour une description de poste. Collez l'offre complète.",
         "tooLong": "C'est trop long pour une seule offre d'emploi.",
         "parseFailed": "L'offre n'a pas pu être traitée. Réessayez.",

@@ -4,13 +4,23 @@ import { auth } from "@clerk/nextjs/server";
 import { getLocale } from "next-intl/server";
 import { VoyageAIError } from "voyageai";
 import { z } from "zod";
-import { createJob as insertJob, getJob } from "@/db/queries/jobs";
+import { getJob, upsertJob } from "@/db/queries/jobs";
 import { insertMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
 import { embedDocument } from "@/lib/ai/embeddings";
 import { analyzeFit } from "./analyze-fit";
-import { postingFromHtml, postingFromPaste } from "./extract-job-text";
+import {
+  MAX_POSTING_CHARS,
+  postingFromHtml,
+  postingFromPaste,
+} from "./extract-job-text";
 import { fetchJobPage, type FetchError } from "./fetch-job-page";
+import {
+  importGreenhouseJob,
+  parseGreenhouseUrl,
+  type GreenhouseImportError,
+  type GreenhousePosting,
+} from "./greenhouse";
 import { parseJob } from "./parse-job";
 
 const createJobInput = z
@@ -24,6 +34,7 @@ export type CreateJobError =
   | "unauthorized"
   | "invalid"
   | FetchError
+  | GreenhouseImportError
   | "needsPaste"
   | "tooShort"
   | "tooLong"
@@ -45,14 +56,34 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
   const { url, text } = parsedInput.data;
 
   let posting: string;
-  let source: "url" | "manual";
+  let source: "url" | "manual" | "greenhouse";
   let storedUrl: string | null = null;
+  let greenhouse: GreenhousePosting | null = null;
+  const greenhouseTarget = text?.trim() ? null : parseGreenhouseUrl(url!);
   if (text?.trim()) {
     const pasted = postingFromPaste(text);
     if (!pasted.ok) return { ok: false, error: pasted.error };
     posting = pasted.text;
     source = "manual";
     storedUrl = url && URL.canParse(url) && /^https?:/i.test(url) ? url : null;
+  } else if (greenhouseTarget) {
+    // Greenhouse URLs never go through the page fetcher's site checks.
+    const imported = await importGreenhouseJob(greenhouseTarget);
+    if (!imported.ok) return { ok: false, error: imported.error };
+    greenhouse = imported.posting;
+    if (greenhouse.description.length > MAX_POSTING_CHARS)
+      return { ok: false, error: "greenhouseUnavailable" };
+    posting = [
+      ["Title", greenhouse.title],
+      ["Company", greenhouse.company],
+      ["Location", greenhouse.location],
+    ]
+      .filter(([, value]) => value)
+      .map(([label, value]) => `${label}: ${value}`)
+      .concat("", greenhouse.description)
+      .join("\n");
+    source = "greenhouse";
+    storedUrl = greenhouse.url;
   } else {
     const page = await fetchJobPage(url!);
     if (!page.ok) return { ok: false, error: page.error };
@@ -83,23 +114,26 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
     return { ok: false, error: "embedFailed" };
   }
 
+  // Board API fields are authoritative; the model fills in what they lack.
   try {
-    const jobId = await insertJob(userId, {
+    const jobId = await upsertJob(userId, {
       source,
+      externalId: greenhouse?.externalId ?? null,
       url: storedUrl,
-      company: job.company,
-      title: job.title,
-      location: job.location ?? null,
+      company: greenhouse?.company || job.company,
+      title: greenhouse?.title || job.title,
+      location: greenhouse?.location || job.location || null,
       remote: job.remote,
       salaryMin: job.salaryMin ?? null,
       salaryMax: job.salaryMax ?? null,
       salaryCurrency: job.salaryCurrency ?? null,
-      descriptionRaw: posting,
+      descriptionRaw: greenhouse?.description ?? posting,
       requirements,
       requirementsModel: parsed.model,
       requirementsPromptVersion: parsed.promptVersion,
       embedding,
-      language,
+      postedAt: greenhouse?.postedAt ?? null,
+      language: greenhouse?.language ?? language,
     });
     return { ok: true, jobId };
   } catch {

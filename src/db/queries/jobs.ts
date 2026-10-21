@@ -7,10 +7,18 @@ export type NewJob = Omit<
   "id" | "userId" | "createdAt" | "updatedAt"
 >;
 
-export async function createJob(userId: string, job: NewJob): Promise<string> {
+// Board imports carry an externalId, so re-importing the same posting updates
+// the existing row (keeping its id, matches and tracker card) instead of
+// duplicating it. Rows without an externalId never conflict: NULLs are
+// distinct in the unique index.
+export async function upsertJob(userId: string, job: NewJob): Promise<string> {
   const [row] = await db
     .insert(jobs)
     .values({ ...job, userId })
+    .onConflictDoUpdate({
+      target: [jobs.userId, jobs.source, jobs.externalId],
+      set: { ...job, updatedAt: new Date() },
+    })
     .returning({ id: jobs.id });
   return row.id;
 }
