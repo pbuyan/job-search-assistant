@@ -12,7 +12,9 @@ export type CheckName =
   | "firstTry"
   | "language"
   | "sources"
-  | "numbers";
+  | "numbers"
+  | "structure"
+  | "style";
 
 // `warn` marks a check that could not decide (e.g. text too short to detect
 // a language); it is reported but does not fail the case.
@@ -117,8 +119,8 @@ type TailoredText = { sourceBulletId: string; text: string };
 // Numbers with thousands separators dropped; reimplemented here rather than
 // imported so the eval doesn't depend on the validator it checks.
 const numbers = (text: string) =>
-  (text.match(/\d(?:[\d.,\u00a0\u202f]*\d)?/g) ?? []).map((n) =>
-    n.replace(/[.,\u00a0\u202f]/g, ""),
+  (text.match(/\d+(?:[.,\u00a0\u202f]\d+| \d{3}(?!\d))*/g) ?? []).map((n) =>
+    n.replace(/[., \u00a0\u202f]/g, ""),
   );
 
 export function checkTailor(input: {
@@ -148,6 +150,69 @@ export function checkTailor(input: {
       detail:
         added.length > 0
           ? `new numbers in: ${added.map((b) => b.sourceBulletId).join(", ")}`
+          : undefined,
+    },
+    {
+      name: "firstTry",
+      pass: input.attempts === 1,
+      detail: `${input.attempts} attempt(s)`,
+    },
+    detected === "unknown"
+      ? { name: "language", pass: true, warn: true, detail: detected }
+      : { name: "language", pass: detected === input.language, detail: detected },
+  ];
+}
+
+type ResumeShape = {
+  work: { sourceWorkId: string; company: string; bullets: TailoredText[] }[];
+  projects?: { sourceProjectId: string; bullets: TailoredText[] }[];
+};
+
+// Translation: same entries and bullets in the same order with the same
+// employers, the same numbers in every bullet, and bullets in the target
+// language.
+export function checkTranslate(input: {
+  source: ResumeShape;
+  out: ResumeShape;
+  attempts: number;
+  language: Language;
+}): Check[] {
+  const outline = (r: ResumeShape) =>
+    JSON.stringify([
+      ...r.work.map((w) => [w.sourceWorkId, w.company, w.bullets.map((b) => b.sourceBulletId)]),
+      ...(r.projects ?? []).map((p) => [p.sourceProjectId, p.bullets.map((b) => b.sourceBulletId)]),
+    ]);
+  const bullets = (r: ResumeShape) =>
+    [...r.work, ...(r.projects ?? [])].flatMap((e) => e.bullets);
+  const outBullets = new Map(bullets(input.out).map((b) => [b.sourceBulletId, b.text]));
+  const changed = bullets(input.source).filter((b) => {
+    const a = numbers(b.text).sort().join(" ");
+    const c = numbers(outBullets.get(b.sourceBulletId) ?? "").sort().join(" ");
+    return a !== c;
+  });
+  const detected = detectLanguage(bullets(input.out).map((b) => b.text).join("\n"));
+  // French bullets opening on a bare past participle ("Dirigé la…") are an
+  // anglicism; a first word ending in -é(e)(s) is a cheap, close signal.
+  const bare =
+    input.language === "fr"
+      ? bullets(input.out).filter((b) => /^\p{L}+é(e)?s?\s/u.test(b.text.trim()))
+      : [];
+  return [
+    { name: "structure", pass: outline(input.source) === outline(input.out) },
+    {
+      name: "style",
+      pass: bare.length === 0,
+      detail:
+        bare.length > 0
+          ? `bare participle in: ${bare.map((b) => b.sourceBulletId).join(", ")}`
+          : undefined,
+    },
+    {
+      name: "numbers",
+      pass: changed.length === 0,
+      detail:
+        changed.length > 0
+          ? `numbers differ in: ${changed.map((b) => b.sourceBulletId).join(", ")}`
           : undefined,
     },
     {

@@ -206,3 +206,17 @@ export const TAILOR_CASES: TailorCase[] = [
     expect: { language: "fr" },
   },
 ];
+
+// Translation cases: a whole fixture profile as a resume version, into the
+// other language.
+export type TranslateCase = {
+  id: string;
+  profile: ProfileId;
+  from: Language;
+  to: Language;
+};
+
+export const TRANSLATE_CASES: TranslateCase[] = [
+  { id: "tr-en-to-fr", profile: "dev-en", from: "en", to: "fr" },
+  { id: "tr-fr-to-en", profile: "dev-fr", from: "fr", to: "en" },
+];

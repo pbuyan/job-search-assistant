@@ -44,6 +44,23 @@ export default async function EditResumePage({
   // Locked versions are only duplicated, from their own page.
   if (version.locked) return redirect({ href: `/resumes/${id}`, locale });
 
+  // A translation can't be rebuilt from a profile in another language.
+  if (profile && profile.language !== version.language) {
+    return (
+      <>
+        <h1 className="text-start text-2xl font-semibold">
+          {t("title", { name: version.name })}
+        </h1>
+        <p className="max-w-3xl text-start text-sm">
+          {t("otherLanguage")}{" "}
+          <Link href={`/resumes/${id}`} className="underline underline-offset-4">
+            {t("cancel")}
+          </Link>
+        </p>
+      </>
+    );
+  }
+
   // Stale: the version cites achievements the profile no longer has, so it
   // couldn't be saved again.
   const plan = profile ? planFromResume(version.data, profile.data) : null;

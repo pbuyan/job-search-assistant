@@ -17,13 +17,14 @@ export type TailoringProblem =
 
 const key = (s: string) => s.trim().toLowerCase();
 
-// Numbers as written, with thousands separators dropped so "1,200", "1 200"
-// (French, narrow no-break space) and "1200" compare equal. Plain spaces are
-// not separators: "3 5" is two numbers.
-const NUMBER = /\d(?:[\d.,\u00a0\u202f]*\d)?/g;
+// Numbers as written, with separators dropped so "1,200", "1 200" (French,
+// with a plain, no-break or narrow no-break space) and "1200" compare equal.
+// A plain space only joins a following group of exactly three digits: "3 5"
+// is two numbers.
+const NUMBER = /\d+(?:[.,\u00a0\u202f]\d+| \d{3}(?!\d))*/g;
 export function numbersIn(text: string): Set<string> {
   return new Set(
-    (text.match(NUMBER) ?? []).map((n) => n.replace(/[.,\u00a0\u202f]/g, "")),
+    (text.match(NUMBER) ?? []).map((n) => n.replace(/[., \u00a0\u202f]/g, "")),
   );
 }
 

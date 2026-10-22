@@ -170,11 +170,14 @@ export type SaveResumeEditsError =
   | "noProfile"
   | "invalidSource"
   | "locked"
+  | "otherLanguage"
   | "failed";
 
 // The user's own edits to a saved version. Same rule as saving a proposal:
 // every bullet must cite the current master profile, and the resume is
-// rebuilt from it here. A version attached to an application is locked.
+// rebuilt from it here. A version attached to an application is locked, and
+// a version in another language than the profile (a translation) can't be
+// rebuilt from it.
 export async function saveResumeEdits(
   input: unknown,
 ): Promise<{ ok: true } | { ok: false; error: SaveResumeEditsError }> {
@@ -184,8 +187,14 @@ export async function saveResumeEdits(
   if (!parsed.success) return { ok: false, error: "invalid" };
   const { id, plan } = parsed.data;
 
-  const profile = await getProfile(userId);
+  const [profile, version] = await Promise.all([
+    getProfile(userId),
+    getResumeVersion(userId, id),
+  ]);
+  if (!version) return { ok: false, error: "notFound" };
   if (!profile) return { ok: false, error: "noProfile" };
+  if (version.language !== profile.language)
+    return { ok: false, error: "otherLanguage" };
   if (validateTailoringStructure(plan, profile.data).length > 0)
     return { ok: false, error: "invalidSource" };
 
