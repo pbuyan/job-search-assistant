@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { getLocale } from "next-intl/server";
 import { VoyageAIError } from "voyageai";
 import { z } from "zod";
-import { getJob, upsertJob } from "@/db/queries/jobs";
+import { deleteJob as deleteJobRow, getJob, upsertJob } from "@/db/queries/jobs";
 import { insertMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
 import { embedDocument, isRateLimited } from "@/lib/ai/embeddings";
@@ -195,6 +195,26 @@ export async function analyzeJob(
       analysisLanguage: result.analysisLanguage,
     });
     return { ok: true };
+  } catch {
+    return { ok: false, error: "failed" };
+  }
+}
+
+export type DeleteJobError = "unauthorized" | "notFound" | "failed";
+
+// Removes the job with its fit analyses, application, timeline and
+// contacts. Tailored resume versions stay, detached from the job.
+export async function deleteJob(
+  jobId: unknown,
+): Promise<{ ok: true } | { ok: false; error: DeleteJobError }> {
+  const { userId } = await auth();
+  if (!userId) return { ok: false, error: "unauthorized" };
+  const id = z.uuid().safeParse(jobId);
+  if (!id.success) return { ok: false, error: "notFound" };
+  try {
+    return (await deleteJobRow(userId, id.data))
+      ? { ok: true }
+      : { ok: false, error: "notFound" };
   } catch {
     return { ok: false, error: "failed" };
   }

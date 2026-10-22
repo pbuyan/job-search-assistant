@@ -101,7 +101,7 @@ describe("ApplicationCard", () => {
     );
     expect(screen.getByText("Adéquation 72")).toBeInTheDocument();
     expect(screen.getByText(/échéance le 5 nov\. 2026/)).toBeInTheDocument();
-    expect(screen.getByRole("link")).toHaveAttribute("href", "/jobs/job-a");
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/tracker/a");
     unmount();
 
     render(

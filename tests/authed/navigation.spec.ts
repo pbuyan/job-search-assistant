@@ -71,6 +71,12 @@ test("unknown job ids are a 404", async ({ page }) => {
     "/en/jobs/00000000-0000-4000-8000-000000000000",
   );
   expect(missing?.status()).toBe(404);
+  for (const path of [
+    "/en/tracker/not-a-uuid",
+    "/en/tracker/00000000-0000-4000-8000-000000000000",
+  ]) {
+    expect((await gotoSignedIn(page, path))?.status(), path).toBe(404);
+  }
 });
 
 test("unknown resume and tailoring targets are a 404", async ({ page }) => {

@@ -8,8 +8,10 @@ import {
   translateOutputSchema,
 } from "@/prompts/translate-resume";
 import {
-  mergeTranslation,
+  applyTranslation,
+  segmentsOf,
   validateTranslation,
+  type Segment,
   type TranslationProblem,
 } from "./merge";
 
@@ -29,7 +31,7 @@ export type TranslateResult =
       problems?: TranslationProblem[];
     };
 
-// One retry: a rejected answer is usually a one-off slip (a dropped bullet).
+// One retry: a rejected answer is usually a one-off slip (a dropped segment).
 const MAX_ATTEMPTS = 2;
 
 // The resume is PII: never log the prompt, the output or error details.
@@ -38,13 +40,16 @@ export async function translateResume(input: {
   sourceLanguage: string;
   targetLanguage: string;
 }): Promise<TranslateResult> {
-  const prompt = buildTranslatePrompt(input);
+  const segments = segmentsOf(input.resume);
+  const prompt = buildTranslatePrompt({ ...input, segments });
   let lastError: "parseFailed" | "invalidTranslation" = "parseFailed";
   let lastProblems: TranslationProblem[] | undefined;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-    let out: TailoredResume;
+    let out: Segment[];
     try {
-      ({ object: out } = await generateObject({
+      ({
+        object: { segments: out },
+      } = await generateObject({
         model: translateResumeModel(),
         schema: translateOutputSchema,
         system: TRANSLATE_RESUME_SYSTEM,
@@ -59,7 +64,7 @@ export async function translateResume(input: {
       lastProblems = undefined;
       continue;
     }
-    const problems = validateTranslation(input.resume, out);
+    const problems = validateTranslation(segments, out);
     if (problems.length > 0) {
       lastError = "invalidTranslation";
       lastProblems = problems;
@@ -67,7 +72,7 @@ export async function translateResume(input: {
     }
     return {
       ok: true,
-      resume: mergeTranslation(input.resume, out),
+      resume: applyTranslation(input.resume, out),
       model: MODEL_IDS.translateResume,
       promptVersion: PROMPT_VERSION,
       attempts: attempt + 1,

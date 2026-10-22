@@ -15,6 +15,7 @@ export function statusCounts(board: Board): StatusCount[] {
 }
 
 export type UpcomingStep = {
+  applicationId: string;
   jobId: string;
   title: string;
   company: string;
@@ -38,7 +39,8 @@ export function upcomingSteps(board: Board, today: Date, days = 7): UpcomingStep
       (c): c is typeof c & { nextStepDue: string } =>
         c.nextStepDue !== null && c.nextStepDue >= from && c.nextStepDue <= to,
     )
-    .map(({ jobId, title, company, nextStep, nextStepDue }) => ({
+    .map(({ id, jobId, title, company, nextStep, nextStepDue }) => ({
+      applicationId: id,
       jobId,
       title,
       company,

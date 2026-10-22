@@ -2,7 +2,12 @@
 import { MockLanguageModelV4 } from "ai/test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { TailoredResume } from "@/db/schema";
-import { mergeTranslation, validateTranslation } from "./merge";
+import {
+  applyTranslation,
+  segmentsOf,
+  validateTranslation,
+  type Segment,
+} from "./merge";
 import { translateResume } from "./translate";
 
 let model: MockLanguageModelV4;
@@ -55,8 +60,9 @@ const source: TailoredResume = {
   languages: [{ language: "English", fluency: "Native" }],
 };
 
-// What a good model answer looks like, including fields it must not change
-// (company, name, email, dates) changed anyway, to prove they're ignored.
+// The same resume translated. Only its segments (segmentsOf) are a model
+// answer; its company, name, email and dates are deliberately different to
+// prove those never come from the translation.
 const translated: TailoredResume = {
   basics: {
     name: "Ada L.",
@@ -102,40 +108,69 @@ const reply = (object: unknown) => ({
   warnings: [],
 });
 
-describe("validateTranslation", () => {
-  it("accepts a translation that lines up and keeps every number", () => {
-    expect(validateTranslation(source, translated)).toEqual([]);
-  });
+const good: Segment[] = segmentsOf(translated);
+const sourceSegments = segmentsOf(source);
+const without = (id: string) => good.filter((g) => g.id !== id);
+const replace = (id: string, text: string) =>
+  good.map((g) => (g.id === id ? { id, text } : g));
 
-  it("rejects dropped or reordered bullets and lost numbers or text", () => {
-    const bad = structuredClone(translated);
-    bad.work[0].bullets.reverse();
-    expect(validateTranslation(source, bad)).toEqual([
-      { kind: "shape", path: "work.0.bullets.0" },
-      { kind: "shape", path: "work.0.bullets.1" },
-    ]);
-
-    const lost = structuredClone(translated);
-    lost.work[0].bullets[0].text = "A réduit la latence de moitié.";
-    lost.basics.summary = "";
-    lost.skills[0].items.pop();
-    expect(validateTranslation(source, lost)).toEqual([
-      { kind: "empty", path: "basics.summary" },
-      { kind: "numbers", path: "work.0.bullets.0" },
-      { kind: "shape", path: "skills" },
-    ]);
-
-    const dropped = structuredClone(translated);
-    dropped.work[0].bullets.pop();
-    expect(validateTranslation(source, dropped)).toEqual([
-      { kind: "shape", path: "work.0" },
+describe("segmentsOf", () => {
+  it("lists only translatable text, by path", () => {
+    expect(sourceSegments.map((g) => g.id)).toEqual([
+      "basics.label",
+      "basics.summary",
+      "work.0.position",
+      "work.0.bullets.0.text",
+      "work.0.bullets.1.text",
+      "skills.0.category",
+      "skills.0.items.0",
+      "skills.0.items.1",
+      "education.0.studyType",
+      "education.0.area",
+      "languages.0.language",
+      "languages.0.fluency",
     ]);
   });
 });
 
-describe("mergeTranslation", () => {
-  it("takes only translatable text and keeps names, employers, dates and ids", () => {
-    const merged = mergeTranslation(source, translated);
+describe("validateTranslation", () => {
+  it("accepts every segment translated once with its numbers", () => {
+    expect(validateTranslation(sourceSegments, good)).toEqual([]);
+    // Order doesn't matter.
+    expect(validateTranslation(sourceSegments, [...good].reverse())).toEqual(
+      [],
+    );
+  });
+
+  it("rejects missing, invented, repeated or empty segments and lost numbers", () => {
+    expect(
+      validateTranslation(sourceSegments, [
+        ...without("work.0.bullets.1.text"),
+        { id: "projects.0.name", text: "Projet inventé" },
+        good[0],
+      ]),
+    ).toEqual([
+      { kind: "unknown", id: "projects.0.name" },
+      { kind: "duplicate", id: "basics.label" },
+      { kind: "missing", id: "work.0.bullets.1.text" },
+    ]);
+    expect(
+      validateTranslation(
+        sourceSegments,
+        [
+          ...replace("work.0.bullets.0.text", "A réduit la latence de moitié."),
+        ].map((g) => (g.id === "basics.summary" ? { ...g, text: " " } : g)),
+      ),
+    ).toEqual([
+      { kind: "empty", id: "basics.summary" },
+      { kind: "numbers", id: "work.0.bullets.0.text" },
+    ]);
+  });
+});
+
+describe("applyTranslation", () => {
+  it("puts translated text in place and keeps names, employers, dates and ids", () => {
+    const merged = applyTranslation(source, good);
     expect(merged.basics).toEqual({
       ...source.basics,
       label: "Ingénieure principale",
@@ -162,21 +197,22 @@ describe("mergeTranslation", () => {
     expect(merged.skills).toEqual([
       { category: "Langages", items: ["TypeScript", "Gestion de projet"] },
     ]);
+    expect(source.work[0].position).toBe("Senior Engineer");
   });
 
-  it("keeps the source text where the model left a field blank", () => {
-    const blank = structuredClone(translated);
-    blank.skills[0].items[1] = " ";
-    expect(mergeTranslation(source, blank).skills[0].items[1]).toBe(
-      "Project management",
-    );
+  it("ignores ids that aren't the source's own segments", () => {
+    const merged = applyTranslation(source, [
+      { id: "basics.email", text: "changed@example.com" },
+      { id: "work.0.company", text: "Other" },
+    ]);
+    expect(merged).toEqual(source);
   });
 });
 
 describe("translateResume", () => {
   beforeEach(() => {
     model = new MockLanguageModelV4({
-      doGenerate: async () => reply(translated),
+      doGenerate: async () => reply({ segments: good }),
     });
   });
 
@@ -189,18 +225,22 @@ describe("translateResume", () => {
     expect(result).toMatchObject({
       ok: true,
       model: "test-model",
-      promptVersion: "translate-resume@1",
+      promptVersion: "translate-resume@2",
       attempts: 1,
     });
     const sent = JSON.stringify(model.doGenerateCalls[0].prompt);
     expect(sent).toContain("Source language: en");
     expect(sent).toContain("Target language: fr");
+    // Only segments are sent: no contact details or employers.
+    expect(sent).not.toContain("ada@example.com");
+    expect(sent).not.toContain("Acme");
   });
 
   it("retries once, then rejects a translation that doesn't line up", async () => {
-    const bad = structuredClone(translated);
-    bad.work[0].bullets.pop();
-    model = new MockLanguageModelV4({ doGenerate: async () => reply(bad) });
+    const bad = without("work.0.bullets.1.text");
+    model = new MockLanguageModelV4({
+      doGenerate: async () => reply({ segments: bad }),
+    });
     const result = await translateResume({
       resume: source,
       sourceLanguage: "en",
@@ -209,7 +249,7 @@ describe("translateResume", () => {
     expect(result).toEqual({
       ok: false,
       error: "invalidTranslation",
-      problems: [{ kind: "shape", path: "work.0" }],
+      problems: [{ kind: "missing", id: "work.0.bullets.1.text" }],
     });
     expect(model.doGenerateCalls).toHaveLength(2);
   });
@@ -235,7 +275,7 @@ describe("translateResumeVersion", () => {
   const id = "11111111-1111-4111-8111-111111111111";
   beforeEach(() => {
     model = new MockLanguageModelV4({
-      doGenerate: async () => reply(translated),
+      doGenerate: async () => reply({ segments: good }),
     });
     insertResumeVersion.mockClear();
   });
@@ -253,7 +293,7 @@ describe("translateResumeVersion", () => {
         language: "fr",
         sourceVersionId: id,
         isAiGenerated: true,
-        promptVersion: "translate-resume@1",
+        promptVersion: "translate-resume@2",
       }),
     );
   });

@@ -4,8 +4,10 @@ import {
   applicationEvents,
   applications,
   applicationStatus,
+  contacts,
   jobMatches,
   jobs,
+  resumeVersions,
 } from "@/db/schema";
 import {
   emptyBoard,
@@ -13,6 +15,11 @@ import {
   type ApplicationStatus,
   type Board,
 } from "@/features/tracker/board";
+import {
+  dayToTimestamp,
+  type ApplicationDetails,
+  type EventInput,
+} from "@/features/tracker/schemas";
 
 // Compile-time check that the client-side status list matches the pg enum.
 type Same<A, B> = [A] extends [B] ? ([B] extends [A] ? true : false) : false;
@@ -188,5 +195,163 @@ export async function moveApplication(
       });
     }
     return true;
+  });
+}
+
+// One application with its job and the resume version sent, if any. Joins
+// are scoped to the user too.
+export async function getApplication(userId: string, id: string) {
+  const [row] = await db
+    .select({
+      id: applications.id,
+      status: applications.status,
+      appliedAt: applications.appliedAt,
+      nextStep: applications.nextStep,
+      nextStepDue: applications.nextStepDue,
+      notes: applications.notes,
+      coverLetter: applications.coverLetter,
+      resumeVersionId: applications.resumeVersionId,
+      resumeVersionName: resumeVersions.name,
+      jobId: jobs.id,
+      jobTitle: jobs.title,
+      jobCompany: jobs.company,
+    })
+    .from(applications)
+    .innerJoin(
+      jobs,
+      and(eq(jobs.id, applications.jobId), eq(jobs.userId, userId)),
+    )
+    .leftJoin(
+      resumeVersions,
+      and(
+        eq(resumeVersions.id, applications.resumeVersionId),
+        eq(resumeVersions.userId, userId),
+      ),
+    )
+    .where(and(eq(applications.id, id), eq(applications.userId, userId)))
+    .limit(1);
+  return row ?? null;
+}
+
+export type ApplicationRow = NonNullable<Awaited<ReturnType<typeof getApplication>>>;
+
+// Saves the details form. A resume version must be the user's own; attaching
+// one locks it (see resume-versions.ts).
+export async function updateApplication(
+  userId: string,
+  id: string,
+  details: ApplicationDetails,
+): Promise<"ok" | "notFound" | "invalidResume"> {
+  return db.transaction(async (tx) => {
+    if (details.resumeVersionId) {
+      const [version] = await tx
+        .select({ id: resumeVersions.id })
+        .from(resumeVersions)
+        .where(
+          and(
+            eq(resumeVersions.id, details.resumeVersionId),
+            eq(resumeVersions.userId, userId),
+          ),
+        );
+      if (!version) return "invalidResume";
+    }
+    const rows = await tx
+      .update(applications)
+      .set({
+        appliedAt: details.appliedOn ? dayToTimestamp(details.appliedOn) : null,
+        nextStep: details.nextStep,
+        nextStepDue: details.nextStepDue,
+        resumeVersionId: details.resumeVersionId,
+        notes: details.notes,
+        coverLetter: details.coverLetter,
+      })
+      .where(and(eq(applications.id, id), eq(applications.userId, userId)))
+      .returning({ id: applications.id });
+    return rows.length > 0 ? "ok" : "notFound";
+  });
+}
+
+// Newest first. Status changes come from the board; the rest are added by
+// the user.
+export async function listEvents(userId: string, applicationId: string) {
+  return db
+    .select({
+      id: applicationEvents.id,
+      type: applicationEvents.type,
+      fromStatus: applicationEvents.fromStatus,
+      toStatus: applicationEvents.toStatus,
+      occurredAt: applicationEvents.occurredAt,
+      title: applicationEvents.title,
+      body: applicationEvents.body,
+    })
+    .from(applicationEvents)
+    .innerJoin(
+      applications,
+      and(
+        eq(applications.id, applicationEvents.applicationId),
+        eq(applications.userId, userId),
+      ),
+    )
+    .where(eq(applicationEvents.applicationId, applicationId))
+    .orderBy(desc(applicationEvents.occurredAt), desc(applicationEvents.createdAt));
+}
+
+// False when the application isn't the user's.
+export async function addEvent(
+  userId: string,
+  applicationId: string,
+  event: EventInput,
+): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    const [app] = await tx
+      .select({ id: applications.id })
+      .from(applications)
+      .where(and(eq(applications.id, applicationId), eq(applications.userId, userId)));
+    if (!app) return false;
+    await tx.insert(applicationEvents).values({
+      applicationId,
+      type: event.type,
+      occurredAt: dayToTimestamp(event.occurredOn),
+      title: event.title,
+      body: event.body,
+    });
+    return true;
+  });
+}
+
+// Only events the user added; the status history stays.
+export async function deleteEvent(
+  userId: string,
+  eventId: string,
+): Promise<boolean> {
+  const owned = db
+    .select({ id: applications.id })
+    .from(applications)
+    .where(eq(applications.userId, userId));
+  const rows = await db
+    .delete(applicationEvents)
+    .where(
+      and(
+        eq(applicationEvents.id, eventId),
+        ne(applicationEvents.type, "status_change"),
+        inArray(applicationEvents.applicationId, owned),
+      ),
+    )
+    .returning({ id: applicationEvents.id });
+  return rows.length > 0;
+}
+
+// "Stop tracking": the application, its timeline (cascade) and its contacts
+// go; the job stays. False when it isn't the user's.
+export async function deleteApplication(userId: string, id: string): Promise<boolean> {
+  return db.transaction(async (tx) => {
+    await tx
+      .delete(contacts)
+      .where(and(eq(contacts.applicationId, id), eq(contacts.userId, userId)));
+    const rows = await tx
+      .delete(applications)
+      .where(and(eq(applications.id, id), eq(applications.userId, userId)))
+      .returning({ id: applications.id });
+    return rows.length > 0;
   });
 }

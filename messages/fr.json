@@ -71,6 +71,10 @@
     "tailor": {
       "title": "Adapter votre CV",
       "description": "Adaptez votre CV à un emploi en réordonnant, en réduisant et en reformulant votre propre expérience."
+    },
+    "application": {
+      "title": "Candidature",
+      "description": "Une candidature : son statut, sa prochaine étape, le CV envoyé, son historique et ses contacts."
     }
   },
   "Auth": { "tagline": "Associez les offres à votre expérience et suivez chaque candidature." },
@@ -308,6 +312,20 @@
         "empty": "Aucun CV adapté pour cet emploi pour l'instant.",
         "tailor": "Adapter le CV"
       },
+      "delete": {
+        "heading": "Supprimer cet emploi",
+        "hint": "Supprime l'emploi, ses analyses de correspondance et sa candidature avec son historique et ses contacts. Les CV adaptés sont conservés.",
+        "button": "Supprimer l'emploi",
+        "title": "Supprimer cet emploi?",
+        "body": "« {title} » sera supprimé avec ses analyses et sa candidature. Les CV adaptés sont conservés. Cette action est irréversible.",
+        "cancel": "Annuler",
+        "confirm": "Supprimer l'emploi",
+        "errors": {
+          "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+          "notFound": "Cet emploi n'existe plus.",
+          "failed": "L'emploi n'a pas pu être supprimé. Réessayez."
+        }
+      },
       "requirementsTitle": "Exigences extraites",
       "requirementsHint": "Telles qu'elles figurent dans l'offre.",
       "requirementGroups": { "mustHave": "Obligatoires", "niceToHave": "Atouts" }
@@ -487,10 +505,72 @@
       "adding": "Ajout en cours…",
       "tracked": "Dans votre suivi : {status}.",
       "open": "Ouvrir le suivi",
+      "openApplication": "Ouvrir la candidature",
       "errors": {
         "unauthorized": "Votre session a expiré. Reconnectez-vous.",
         "notFound": "Ce poste n'existe plus.",
         "failed": "Impossible d'ajouter le poste. Réessayez."
+      }
+    },
+    "application": {
+      "status": "Statut",
+      "viewJob": "Voir l'emploi",
+      "backToTracker": "Retour au suivi",
+      "details": "Détails",
+      "sentResume": "CV envoyé : <link>{name}</link>. Il est verrouillé pour conserver ce que vous avez envoyé.",
+      "appliedOn": "Date de la candidature",
+      "resume": "CV envoyé",
+      "noResume": "Aucun",
+      "resumeHint": "Joindre une version la verrouille. Vous pouvez toujours la dupliquer pour la modifier.",
+      "nextStep": "Prochaine étape",
+      "nextStepDue": "Échéance de la prochaine étape",
+      "notes": "Notes",
+      "coverLetter": "Lettre de présentation",
+      "save": "Enregistrer les détails",
+      "saving": "Enregistrement…",
+      "saved": "Détails enregistrés.",
+      "timeline": "Historique",
+      "addEvent": "Ajouter à l'historique",
+      "eventType": "Type",
+      "eventDate": "Date",
+      "eventTitle": "Titre",
+      "eventBody": "Détails",
+      "addEventSubmit": "Ajouter",
+      "eventTypes": {
+        "note": "Note",
+        "interview": "Entrevue",
+        "email": "Courriel",
+        "follow_up": "Relance",
+        "offer": "Offre"
+      },
+      "moved": "Déplacée vers {status}",
+      "tracked": "Ajoutée au suivi ({status})",
+      "remove": "Retirer",
+      "removeEvent": "Retirer {label} du {date}",
+      "contacts": "Contacts",
+      "noContacts": "Aucun contact pour l'instant.",
+      "addContact": "Ajouter un contact",
+      "contactName": "Nom",
+      "contactRole": "Rôle (recruteur, gestionnaire d'embauche…)",
+      "contactEmail": "Courriel",
+      "contactLinkedin": "URL du profil LinkedIn",
+      "contactNotes": "Notes",
+      "addContactSubmit": "Ajouter le contact",
+      "contactProfile": "Profil LinkedIn",
+      "removeContact": "Retirer {name}",
+      "stopTrackingHeading": "Arrêter le suivi",
+      "stopTrackingHint": "Retire cette candidature, son historique et ses contacts de votre suivi. L'emploi et vos CV restent.",
+      "stopTracking": "Arrêter le suivi",
+      "stopTrackingTitle": "Arrêter le suivi de cette candidature?",
+      "stopTrackingBody": "La candidature pour « {title} », son historique et ses contacts seront supprimés. Cette action est irréversible.",
+      "stopTrackingConfirm": "Arrêter le suivi",
+      "cancel": "Annuler",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "invalid": "Certains champs sont invalides. Vérifiez les dates, le courriel et les liens, puis réessayez.",
+        "invalidResume": "Cette version du CV n'existe plus. Choisissez-en une autre.",
+        "notFound": "Cet élément n'existe plus. Rechargez la page.",
+        "failed": "L'opération a échoué. Réessayez."
       }
     },
     "errors": {

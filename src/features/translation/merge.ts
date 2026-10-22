@@ -1,10 +1,49 @@
 import type { TailoredResume } from "@/db/schema";
 import { numbersIn } from "@/features/tailoring/validate-tailoring";
 
+// A translatable string of a resume, addressed by its path in the resume
+// ("basics.summary", "work.0.bullets.2.text", "skills.1.items.0"…). Only
+// these go to the model, and only these come back: the structure, names,
+// employers, institutions, dates, contact details and ids never leave the
+// code.
+export type Segment = { id: string; text: string };
+
+export function segmentsOf(resume: TailoredResume): Segment[] {
+  const out: Segment[] = [];
+  const add = (id: string, text: string | undefined) => {
+    if (text?.trim()) out.push({ id, text });
+  };
+  add("basics.label", resume.basics.label);
+  add("basics.summary", resume.basics.summary);
+  resume.work.forEach((w, i) => {
+    add(`work.${i}.position`, w.position);
+    w.bullets.forEach((b, j) => add(`work.${i}.bullets.${j}.text`, b.text));
+  });
+  resume.projects?.forEach((p, i) => {
+    add(`projects.${i}.name`, p.name);
+    p.bullets.forEach((b, j) => add(`projects.${i}.bullets.${j}.text`, b.text));
+  });
+  resume.skills.forEach((s, i) => {
+    add(`skills.${i}.category`, s.category);
+    s.items.forEach((item, j) => add(`skills.${i}.items.${j}`, item));
+  });
+  resume.education?.forEach((e, i) => {
+    add(`education.${i}.studyType`, e.studyType);
+    add(`education.${i}.area`, e.area);
+  });
+  resume.languages?.forEach((l, i) => {
+    add(`languages.${i}.language`, l.language);
+    add(`languages.${i}.fluency`, l.fluency);
+  });
+  return out;
+}
+
 export type TranslationProblem =
-  | { kind: "shape"; path: string }
-  | { kind: "empty"; path: string }
-  | { kind: "numbers"; path: string };
+  | { kind: "missing"; id: string }
+  | { kind: "unknown"; id: string }
+  | { kind: "duplicate"; id: string }
+  | { kind: "empty"; id: string }
+  | { kind: "numbers"; id: string };
 
 const sameNumbers = (a: string, b: string) => {
   const x = numbersIn(a);
@@ -12,148 +51,45 @@ const sameNumbers = (a: string, b: string) => {
   return x.size === y.size && [...x].every((n) => y.has(n));
 };
 
-// The translation must line up with its source entry by entry and bullet by
-// bullet (same ids, same order), keep every number, and leave nothing that
-// had text empty. Any problem rejects the whole output.
+// Every source segment translated exactly once, nothing else, no empty text,
+// and every number kept. Any problem rejects the whole output.
 export function validateTranslation(
-  source: TailoredResume,
-  out: TailoredResume,
+  source: Segment[],
+  out: Segment[],
 ): TranslationProblem[] {
   const problems: TranslationProblem[] = [];
-  const text = (
-    path: string,
-    from: string | undefined,
-    to: string | undefined,
-  ) => {
-    if (!from?.trim()) return;
-    if (!to?.trim()) problems.push({ kind: "empty", path });
-    else if (!sameNumbers(from, to)) problems.push({ kind: "numbers", path });
-  };
-
-  text("basics.label", source.basics.label, out.basics.label);
-  text("basics.summary", source.basics.summary, out.basics.summary);
-
-  const entries = [
-    ...source.work.map((w, i) => ({
-      path: `work.${i}`,
-      id: w.sourceWorkId,
-      outId: out.work[i]?.sourceWorkId,
-      title: [w.position, out.work[i]?.position] as const,
-      bullets: [w.bullets, out.work[i]?.bullets] as const,
-    })),
-    ...(source.projects ?? []).map((p, i) => ({
-      path: `projects.${i}`,
-      id: p.sourceProjectId,
-      outId: out.projects?.[i]?.sourceProjectId,
-      title: [p.name, out.projects?.[i]?.name] as const,
-      bullets: [p.bullets, out.projects?.[i]?.bullets] as const,
-    })),
-  ];
-  if (
-    out.work.length !== source.work.length ||
-    (out.projects?.length ?? 0) !== (source.projects?.length ?? 0)
-  ) {
-    problems.push({ kind: "shape", path: "entries" });
+  const expected = new Map(source.map((s) => [s.id, s.text]));
+  const seen = new Set<string>();
+  for (const s of out) {
+    const from = expected.get(s.id);
+    if (from === undefined) problems.push({ kind: "unknown", id: s.id });
+    else if (seen.has(s.id)) problems.push({ kind: "duplicate", id: s.id });
+    else if (!s.text.trim()) problems.push({ kind: "empty", id: s.id });
+    else if (!sameNumbers(from, s.text))
+      problems.push({ kind: "numbers", id: s.id });
+    seen.add(s.id);
   }
-  for (const e of entries) {
-    const [from, to] = e.bullets;
-    if (e.outId !== e.id || !to || to.length !== from.length) {
-      problems.push({ kind: "shape", path: e.path });
-      continue;
-    }
-    text(`${e.path}.title`, e.title[0], e.title[1]);
-    from.forEach((b, j) => {
-      const path = `${e.path}.bullets.${j}`;
-      if (to[j].sourceBulletId !== b.sourceBulletId)
-        problems.push({ kind: "shape", path });
-      else text(path, b.text, to[j].text);
-    });
-  }
-
-  if (
-    out.skills.length !== source.skills.length ||
-    source.skills.some((s, i) => out.skills[i].items.length !== s.items.length)
-  ) {
-    problems.push({ kind: "shape", path: "skills" });
-  }
-  if ((out.education?.length ?? 0) !== (source.education?.length ?? 0)) {
-    problems.push({ kind: "shape", path: "education" });
-  }
-  if ((out.languages?.length ?? 0) !== (source.languages?.length ?? 0)) {
-    problems.push({ kind: "shape", path: "languages" });
+  for (const id of expected.keys()) {
+    if (!seen.has(id)) problems.push({ kind: "missing", id });
   }
   return problems;
 }
 
-// Takes only the translatable text from a validated translation; everything
-// else comes from the source version. A field the source left empty stays
-// empty, and one the model left empty (only possible where validation
-// doesn't require text, e.g. a skill) keeps the source text.
-export function mergeTranslation(
+// A copy of the source with each validated segment's text put in place.
+// Ids not produced by segmentsOf(source) are ignored.
+export function applyTranslation(
   source: TailoredResume,
-  out: TailoredResume,
+  out: Segment[],
 ): TailoredResume {
-  const pick = <T extends string | undefined>(
-    from: T,
-    to: string | undefined,
-  ): T => (from?.trim() && to?.trim() ? to.trim() : from) as T;
-  const basics = { ...source.basics };
-  if (source.basics.label)
-    basics.label = pick(source.basics.label, out.basics.label);
-  if (source.basics.summary)
-    basics.summary = pick(source.basics.summary, out.basics.summary);
-
-  return {
-    ...source,
-    basics,
-    work: source.work.map((w, i) => ({
-      ...w,
-      position: pick(w.position, out.work[i]?.position),
-      bullets: w.bullets.map((b, j) => ({
-        sourceBulletId: b.sourceBulletId,
-        text: pick(b.text, out.work[i]?.bullets[j]?.text),
-      })),
-    })),
-    ...(source.projects
-      ? {
-          projects: source.projects.map((p, i) => ({
-            ...p,
-            name: pick(p.name, out.projects?.[i]?.name),
-            bullets: p.bullets.map((b, j) => ({
-              sourceBulletId: b.sourceBulletId,
-              text: pick(b.text, out.projects?.[i]?.bullets[j]?.text),
-            })),
-          })),
-        }
-      : {}),
-    skills: source.skills.map((s, i) => ({
-      category: pick(s.category, out.skills[i]?.category),
-      items: s.items.map((item, j) => pick(item, out.skills[i]?.items[j])),
-    })),
-    ...(source.education
-      ? {
-          education: source.education.map((e, i) => {
-            const t = out.education?.[i];
-            return {
-              ...e,
-              ...(e.studyType
-                ? { studyType: pick(e.studyType, t?.studyType) }
-                : {}),
-              ...(e.area ? { area: pick(e.area, t?.area) } : {}),
-            };
-          }),
-        }
-      : {}),
-    ...(source.languages
-      ? {
-          languages: source.languages.map((l, i) => {
-            const t = out.languages?.[i];
-            return {
-              language: pick(l.language, t?.language),
-              ...(l.fluency ? { fluency: pick(l.fluency, t?.fluency) } : {}),
-            };
-          }),
-        }
-      : {}),
-  };
+  const resume = structuredClone(source);
+  const valid = new Set(segmentsOf(source).map((s) => s.id));
+  for (const { id, text } of out) {
+    if (!valid.has(id)) continue;
+    const path = id.split(".");
+    const key = path.pop()!;
+    let node: unknown = resume;
+    for (const part of path) node = (node as Record<string, unknown>)[part];
+    (node as Record<string, unknown>)[key] = text.trim();
+  }
+  return resume;
 }
