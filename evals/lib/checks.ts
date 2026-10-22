@@ -10,7 +10,9 @@ export type CheckName =
   | "score"
   | "evidence"
   | "firstTry"
-  | "language";
+  | "language"
+  | "sources"
+  | "numbers";
 
 // `warn` marks a check that could not decide (e.g. text too short to detect
 // a language); it is reported but does not fail the case.
@@ -108,4 +110,53 @@ function languageCheck(
   if (unsure.length > 0)
     return { name: "language", pass: true, warn: true, detail };
   return { name: "language", pass: true, detail };
+}
+
+type TailoredText = { sourceBulletId: string; text: string };
+
+// Numbers with thousands separators dropped; reimplemented here rather than
+// imported so the eval doesn't depend on the validator it checks.
+const numbers = (text: string) =>
+  (text.match(/\d(?:[\d.,\u00a0\u202f]*\d)?/g) ?? []).map((n) =>
+    n.replace(/[.,\u00a0\u202f]/g, ""),
+  );
+
+export function checkTailor(input: {
+  bullets: TailoredText[];
+  attempts: number;
+  masterBullets: ReadonlyMap<string, string>;
+  language: Language;
+}): Check[] {
+  const unknown = input.bullets.filter((b) => !input.masterBullets.has(b.sourceBulletId));
+  const added = input.bullets.filter((b) => {
+    const allowed = new Set(numbers(input.masterBullets.get(b.sourceBulletId) ?? ""));
+    return numbers(b.text).some((n) => !allowed.has(n));
+  });
+  const detected = detectLanguage(input.bullets.map((b) => b.text).join("\n"));
+  return [
+    {
+      name: "sources",
+      pass: unknown.length === 0 && input.bullets.length > 0,
+      detail:
+        unknown.length > 0
+          ? `unknown ids: ${unknown.map((b) => b.sourceBulletId).join(", ")}`
+          : `${input.bullets.length} bullets`,
+    },
+    {
+      name: "numbers",
+      pass: added.length === 0,
+      detail:
+        added.length > 0
+          ? `new numbers in: ${added.map((b) => b.sourceBulletId).join(", ")}`
+          : undefined,
+    },
+    {
+      name: "firstTry",
+      pass: input.attempts === 1,
+      detail: `${input.attempts} attempt(s)`,
+    },
+    detected === "unknown"
+      ? { name: "language", pass: true, warn: true, detail: detected }
+      : { name: "language", pass: detected === input.language, detail: detected },
+  ];
 }

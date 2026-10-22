@@ -10,7 +10,7 @@
     "themeDark": "Dark",
     "loading": "Loading…"
   },
-  "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker" },
+  "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker", "resumes": "Resumes" },
   "Sidebar": {
     "title": "Sidebar",
     "mobileDescription": "Displays the mobile sidebar.",
@@ -63,6 +63,14 @@
     "tracker": {
       "title": "Tracker",
       "description": "Track each application from saved to offer."
+    },
+    "resumes": {
+      "title": "Resumes",
+      "description": "Resume versions tailored to the jobs you're applying for."
+    },
+    "tailor": {
+      "title": "Tailor your resume",
+      "description": "Tailor your resume to a job by reordering, trimming and rewording your own experience."
     }
   },
   "Auth": { "tagline": "Match jobs to your experience and track every application." },
@@ -290,9 +298,94 @@
         "invalidAnalysis": "The analysis cited experience that isn't in your profile, so it was discarded. Try again.",
         "failed": "The analysis couldn't be saved. Try again."
       },
+      "resumes": {
+        "title": "Tailored resumes",
+        "empty": "No tailored resume for this job yet.",
+        "tailor": "Tailor resume"
+      },
       "requirementsTitle": "Extracted requirements",
       "requirementsHint": "As written in the posting.",
       "requirementGroups": { "mustHave": "Required", "niceToHave": "Preferred" }
+    }
+  },
+  "Resumes": {
+    "title": "Resumes",
+    "description": "Versions of your resume tailored to specific jobs. Your master profile is never changed.",
+    "empty": "No tailored resumes yet. Open a job and choose Tailor resume.",
+    "goToJobs": "Go to jobs",
+    "forJob": "For {job}",
+    "created": "Created {date}",
+    "tailor": {
+      "title": "Tailor your resume",
+      "for": "For <link>{job}</link>",
+      "languageNote": "Written in {language}, your resume language. Tailoring never translates.",
+      "privacy": "Your profile and the job's requirements are sent to Claude (Anthropic), which proposes which achievements to keep and how to word them. It can only reorder, trim and reword what's already in your profile. Nothing is saved until you review it.",
+      "generate": "Generate proposal",
+      "generating": "Tailoring…",
+      "generatingHint": "This can take up to a minute.",
+      "regenerate": "Generate again",
+      "reviewHint": "Review each achievement. You can edit the wording, go back to the original, remove it, or add achievements that were left out.",
+      "summary": "Summary",
+      "original": "Original:",
+      "useOriginal": "Use original",
+      "remove": "Remove",
+      "add": "Add",
+      "groups": {
+        "work": "Work experience",
+        "projects": "Projects"
+      },
+      "leftOut": "Left out of this version",
+      "include": "Include",
+      "exclude": "Leave out",
+      "notIncluded": "Not included",
+      "present": "present",
+      "bulletN": "Achievement {n}, {entry}",
+      "skills": "Skills",
+      "name": "Version name",
+      "save": "Save resume version",
+      "saving": "Saving…",
+      "discard": "Discard",
+      "goToProfile": "Go to your profile",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "notFound": "This job no longer exists.",
+        "noProfile": "Add your work experience and achievements to your profile first.",
+        "noRequirements": "This job has no extracted requirements to tailor against.",
+        "parseFailed": "The proposal couldn't be generated. Try again.",
+        "invalidTailoring": "The proposal used content that isn't in your profile, so it was discarded. Try again.",
+        "invalid": "Some fields are invalid. Check the version name and try again.",
+        "invalidSource": "Your profile changed since this proposal was made. Generate it again.",
+        "failed": "The resume version couldn't be saved. Try again.",
+        "emptyBullet": "An achievement is empty. Write something or remove it.",
+        "noBullets": "Include at least one achievement."
+      }
+    },
+    "preview": {
+      "work": "Experience",
+      "projects": "Projects",
+      "education": "Education",
+      "skills": "Skills",
+      "present": "present"
+    },
+    "detail": {
+      "language": "Resume in {language}",
+      "tailored": "Tailored",
+      "created": "Created {date}",
+      "forJob": "Tailored for",
+      "name": "Version name",
+      "rename": "Rename",
+      "saveName": "Save name",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleteTitle": "Delete this resume version?",
+      "deleteBody": "“{name}” will be deleted. Your master profile isn't affected.",
+      "confirmDelete": "Delete version",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "invalid": "Enter a name.",
+        "notFound": "This resume version no longer exists.",
+        "failed": "That didn't work. Try again."
+      }
     }
   },
   "Tracker": {

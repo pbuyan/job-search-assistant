@@ -10,7 +10,7 @@
     "themeDark": "Sombre",
     "loading": "Chargement…"
   },
-  "Nav": { "dashboard": "Tableau de bord", "profile": "Profil", "jobs": "Emplois", "tracker": "Suivi" },
+  "Nav": { "dashboard": "Tableau de bord", "profile": "Profil", "jobs": "Emplois", "tracker": "Suivi", "resumes": "CV" },
   "Sidebar": {
     "title": "Barre latérale",
     "mobileDescription": "Affiche la barre latérale mobile.",
@@ -63,6 +63,14 @@
     "tracker": {
       "title": "Suivi",
       "description": "Suivez chaque candidature, de l'enregistrement à l'offre."
+    },
+    "resumes": {
+      "title": "CV",
+      "description": "Versions de votre CV adaptées aux emplois qui vous intéressent."
+    },
+    "tailor": {
+      "title": "Adapter votre CV",
+      "description": "Adaptez votre CV à un emploi en réordonnant, en réduisant et en reformulant votre propre expérience."
     }
   },
   "Auth": { "tagline": "Associez les offres à votre expérience et suivez chaque candidature." },
@@ -290,9 +298,94 @@
         "invalidAnalysis": "L'analyse citait une expérience absente de votre profil; elle a donc été rejetée. Réessayez.",
         "failed": "L'analyse n'a pas pu être enregistrée. Réessayez."
       },
+      "resumes": {
+        "title": "CV adaptés",
+        "empty": "Aucun CV adapté pour cet emploi pour l'instant.",
+        "tailor": "Adapter le CV"
+      },
       "requirementsTitle": "Exigences extraites",
       "requirementsHint": "Telles qu'elles figurent dans l'offre.",
       "requirementGroups": { "mustHave": "Obligatoires", "niceToHave": "Atouts" }
+    }
+  },
+  "Resumes": {
+    "title": "CV",
+    "description": "Versions de votre CV adaptées à des emplois précis. Votre profil principal n'est jamais modifié.",
+    "empty": "Aucun CV adapté pour l'instant. Ouvrez un emploi et choisissez Adapter le CV.",
+    "goToJobs": "Voir les emplois",
+    "forJob": "Pour {job}",
+    "created": "Créé le {date}",
+    "tailor": {
+      "title": "Adapter votre CV",
+      "for": "Pour <link>{job}</link>",
+      "languageNote": "Rédigé en {language}, la langue de votre CV. L'adaptation ne traduit jamais.",
+      "privacy": "Votre profil et les exigences de l'emploi sont envoyés à Claude (Anthropic), qui propose les réalisations à garder et leur formulation. Il peut seulement réordonner, réduire et reformuler ce qui figure déjà dans votre profil. Rien n'est enregistré avant votre révision.",
+      "generate": "Générer une proposition",
+      "generating": "Adaptation en cours…",
+      "generatingHint": "Cela peut prendre jusqu'à une minute.",
+      "regenerate": "Générer de nouveau",
+      "reviewHint": "Révisez chaque réalisation. Vous pouvez modifier la formulation, revenir à l'original, la retirer ou ajouter des réalisations laissées de côté.",
+      "summary": "Résumé",
+      "original": "Original :",
+      "useOriginal": "Revenir à l'original",
+      "remove": "Retirer",
+      "add": "Ajouter",
+      "groups": {
+        "work": "Expérience professionnelle",
+        "projects": "Projets"
+      },
+      "leftOut": "Laissé de côté dans cette version",
+      "include": "Inclure",
+      "exclude": "Laisser de côté",
+      "notIncluded": "Non incluses",
+      "present": "aujourd'hui",
+      "bulletN": "Réalisation {n}, {entry}",
+      "skills": "Compétences",
+      "name": "Nom de la version",
+      "save": "Enregistrer la version du CV",
+      "saving": "Enregistrement…",
+      "discard": "Abandonner",
+      "goToProfile": "Aller à votre profil",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "notFound": "Cet emploi n'existe plus.",
+        "noProfile": "Ajoutez d'abord votre expérience professionnelle et vos réalisations à votre profil.",
+        "noRequirements": "Cet emploi n'a aucune exigence extraite pour adapter le CV.",
+        "parseFailed": "La proposition n'a pas pu être générée. Réessayez.",
+        "invalidTailoring": "La proposition utilisait du contenu absent de votre profil; elle a donc été rejetée. Réessayez.",
+        "invalid": "Certains champs sont invalides. Vérifiez le nom de la version et réessayez.",
+        "invalidSource": "Votre profil a changé depuis cette proposition. Générez-la de nouveau.",
+        "failed": "La version du CV n'a pas pu être enregistrée. Réessayez.",
+        "emptyBullet": "Une réalisation est vide. Rédigez-la ou retirez-la.",
+        "noBullets": "Incluez au moins une réalisation."
+      }
+    },
+    "preview": {
+      "work": "Expérience",
+      "projects": "Projets",
+      "education": "Formation",
+      "skills": "Compétences",
+      "present": "aujourd'hui"
+    },
+    "detail": {
+      "language": "CV en {language}",
+      "tailored": "Adapté",
+      "created": "Créé le {date}",
+      "forJob": "Adapté pour",
+      "name": "Nom de la version",
+      "rename": "Renommer",
+      "saveName": "Enregistrer le nom",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "deleteTitle": "Supprimer cette version du CV?",
+      "deleteBody": "« {name} » sera supprimée. Votre profil principal n'est pas touché.",
+      "confirmDelete": "Supprimer la version",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "invalid": "Entrez un nom.",
+        "notFound": "Cette version du CV n'existe plus.",
+        "failed": "L'opération a échoué. Réessayez."
+      }
     }
   },
   "Tracker": {

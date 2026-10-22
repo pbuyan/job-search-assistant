@@ -168,3 +168,41 @@ export const CASES: EvalCase[] = [
     expect: { language: "fr", score: POOR },
   },
 ];
+
+// Tailoring cases: posting × profile. The resume must stay in the profile's
+// language whatever the posting's, so two cases cross languages.
+export type TailorCase = {
+  id: string;
+  posting: PostingId;
+  profile: ProfileId;
+  expect: { language: Language };
+};
+
+export const TAILOR_CASES: TailorCase[] = [
+  {
+    id: "t-en-intermediate-dev",
+    posting: "en-appdirect-intermediate-dev",
+    profile: "dev-en",
+    expect: { language: "en" },
+  },
+  {
+    id: "t-fr-dev-intermediaire",
+    posting: "fr-appdirect-dev-intermediaire",
+    profile: "dev-fr",
+    expect: { language: "fr" },
+  },
+  {
+    // French posting, English resume: must not be translated.
+    id: "t-x-fr-job-en-profile",
+    posting: "fr-appdirect-dev-intermediaire",
+    profile: "dev-en",
+    expect: { language: "en" },
+  },
+  {
+    // English posting, French resume: must not be translated.
+    id: "t-x-en-job-fr-profile",
+    posting: "en-hopper-senior-fullstack",
+    profile: "dev-fr",
+    expect: { language: "fr" },
+  },
+];
