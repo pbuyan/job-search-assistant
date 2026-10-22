@@ -7,6 +7,7 @@ import { z } from "zod";
 import { deleteJob as deleteJobRow, getJob, upsertJob } from "@/db/queries/jobs";
 import { insertMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
+import { consumeQuota } from "@/db/queries/usage";
 import { embedDocument, isRateLimited } from "@/lib/ai/embeddings";
 import { analyzeFit } from "./analyze-fit";
 import { importerFor } from "./boards";
@@ -44,6 +45,7 @@ export type CreateJobError =
   | "noRequirements"
   | "embedFailed"
   | "embedRateLimited"
+  | "quotaExceeded"
   | "failed";
 
 export type CreateJobResult =
@@ -104,6 +106,8 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
     storedUrl = page.finalUrl;
   }
 
+  if ((await consumeQuota(userId, "parseJob")) === "exceeded")
+    return { ok: false, error: "quotaExceeded" };
   const parsed = await parseJob(posting);
   if (!parsed.ok) return { ok: false, error: parsed.error };
   const { job, requirements, language } = parsed.output;
@@ -162,6 +166,7 @@ export type AnalyzeJobError =
   | "noRequirements"
   | "parseFailed"
   | "invalidAnalysis"
+  | "quotaExceeded"
   | "failed";
 
 // The analysis is written in the user's current UI locale, which is passed to
@@ -183,6 +188,8 @@ export async function analyzeJob(
   if (!job.requirements) return { ok: false, error: "noRequirements" };
   if (!profile) return { ok: false, error: "noProfile" };
 
+  if ((await consumeQuota(userId, "fitAnalysis")) === "exceeded")
+    return { ok: false, error: "quotaExceeded" };
   const result = await analyzeFit({
     requirements: job.requirements,
     profile: profile.data,

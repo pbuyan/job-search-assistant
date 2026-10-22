@@ -171,6 +171,18 @@ export const contacts = pgTable("contacts", {
   ...timestamps,
 }, (t) => [index("contacts_user_idx").on(t.userId)]);
 
+// ---------- AI usage (per-user daily quotas) ----------
+// One row per user, feature and UTC day; `count` is the calls made that day.
+export const aiFeature = pgEnum("ai_feature", [
+  "parseResume", "parseJob", "fitAnalysis", "tailorResume", "translateResume", "embedProfile",
+]);
+export const aiUsage = pgTable("ai_usage", {
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  feature: aiFeature("feature").notNull(),
+  day: date("day").notNull(),
+  count: integer("count").default(0).notNull(),
+}, (t) => [uniqueIndex("ai_usage_user_feature_day_uq").on(t.userId, t.feature, t.day)]);
+
 // ---------- JSONB types (mirror these as Zod schemas in src/prompts) ----------
 export type Bullet = { id: string; text: string; skills?: string[] };
 

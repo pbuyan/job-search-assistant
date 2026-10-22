@@ -29,6 +29,11 @@ vi.mock("@/db/queries/profile", () => ({
   savePreferences: (...a: unknown[]) => savePreferencesRow(...(a as [])),
 }));
 
+const consumeQuota = vi.fn(async (): Promise<"ok" | "exceeded"> => "ok");
+vi.mock("@/db/queries/usage", () => ({
+  consumeQuota: (...a: unknown[]) => consumeQuota(...(a as [])),
+}));
+
 const rateLimited = Object.assign(new Error("rate limited"), {
   name: "VoyageAIError",
 });
@@ -179,6 +184,13 @@ describe("embedProfile", () => {
 
     getProfileForEmbedding.mockResolvedValueOnce(null);
     expect(await embedProfile("user-1")).toBe("noProfile");
+  });
+
+  it("reads as rate limited, without calling the service, over the daily cap", async () => {
+    consumeQuota.mockResolvedValueOnce("exceeded");
+    expect(await embedProfile("user-1")).toBe("rateLimited");
+    expect(consumeQuota).toHaveBeenCalledWith("user-1", "embedProfile");
+    expect(embedDocument).not.toHaveBeenCalled();
   });
 });
 

@@ -22,6 +22,7 @@ type ErrorKey =
   | "tooLong"
   | "noContent"
   | "parseFailed"
+  | "quotaExceeded"
   | "network";
 
 const KNOWN: ReadonlySet<string> = new Set<ErrorKey>([
@@ -34,6 +35,7 @@ const KNOWN: ReadonlySet<string> = new Set<ErrorKey>([
   "tooLong",
   "noContent",
   "parseFailed",
+  "quotaExceeded",
 ]);
 
 // Uploads a resume and hands the *proposal* to the parent. This component

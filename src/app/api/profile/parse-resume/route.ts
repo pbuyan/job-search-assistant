@@ -1,6 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { consumeQuota } from "@/db/queries/usage";
 import { extractResumeText } from "@/features/profile/extract-text";
 import { parseResume } from "@/features/profile/parse-resume";
 import { MAX_FILE_BYTES } from "@/features/profile/upload-limits";
@@ -21,7 +22,8 @@ type ErrorCode =
   | "noText"
   | "tooLong"
   | "noContent"
-  | "parseFailed";
+  | "parseFailed"
+  | "quotaExceeded";
 
 const fail = (error: ErrorCode, status: number) =>
   NextResponse.json({ ok: false, error }, { status });
@@ -59,6 +61,9 @@ export async function POST(req: Request) {
     return fail(extracted.error, extracted.error === "tooLarge" ? 413 : 422);
   }
 
+  if ((await consumeQuota(userId, "parseResume")) === "exceeded") {
+    return fail("quotaExceeded", 429);
+  }
   const parsed = await parseResume(extracted.text);
   if (!parsed.ok) return fail(parsed.error, parsed.error === "noContent" ? 422 : 502);
 

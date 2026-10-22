@@ -7,6 +7,7 @@ import {
   getResumeVersion,
   insertResumeVersion,
 } from "@/db/queries/resume-versions";
+import { consumeQuota } from "@/db/queries/usage";
 import { resumeLanguageSchema } from "@/features/profile/schemas";
 import { languageName } from "@/lib/language-name";
 import { translateResume } from "./translate";
@@ -23,6 +24,7 @@ export type TranslateVersionError =
   | "sameLanguage"
   | "parseFailed"
   | "invalidTranslation"
+  | "quotaExceeded"
   | "failed";
 
 // Translation is always an explicit action and always creates a new
@@ -47,6 +49,8 @@ export async function translateResumeVersion(
   if (source.language === targetLanguage)
     return { ok: false, error: "sameLanguage" };
 
+  if ((await consumeQuota(userId, "translateResume")) === "exceeded")
+    return { ok: false, error: "quotaExceeded" };
   const result = await translateResume({
     resume: source.data,
     sourceLanguage: source.language,

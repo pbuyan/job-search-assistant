@@ -27,3 +27,10 @@ export async function upsertUser(input: UpsertUserInput): Promise<string> {
 export async function setUserLocale(userId: string, locale: Locale) {
   await db.update(users).set({ locale }).where(eq(users.id, userId));
 }
+
+// Removes the user and, through ON DELETE CASCADE, everything they own:
+// profile, jobs, fit analyses, resume versions, applications with their
+// timeline, contacts and AI usage. Deleting an unknown user is a no-op.
+export async function deleteUserData(userId: string) {
+  await db.delete(users).where(eq(users.id, userId));
+}

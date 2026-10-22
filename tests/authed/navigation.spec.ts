@@ -8,6 +8,7 @@ const pages = [
   { nav: "Jobs", path: "/en/jobs", heading: "Jobs" },
   { nav: "Resumes", path: "/en/resumes", heading: "Resumes" },
   { nav: "Tracker", path: "/en/tracker", heading: "Tracker" },
+  { nav: "Settings", path: "/en/settings", heading: "Settings" },
   { nav: "Dashboard", path: "/en/dashboard", heading: "Dashboard" },
 ];
 
@@ -39,6 +40,7 @@ test("app pages render in French", async ({ page }) => {
     { path: "/fr/jobs", heading: "Emplois" },
     { path: "/fr/resumes", heading: "CV" },
     { path: "/fr/tracker", heading: "Suivi" },
+    { path: "/fr/settings", heading: "Paramètres" },
   ];
   for (const { path, heading } of french) {
     await gotoSignedIn(page, path);

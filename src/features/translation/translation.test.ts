@@ -271,6 +271,11 @@ vi.mock("@/db/queries/resume-versions", () => ({
   getResumeVersion: () => getResumeVersion(),
 }));
 
+const consumeQuota = vi.fn(async (): Promise<"ok" | "exceeded"> => "ok");
+vi.mock("@/db/queries/usage", () => ({
+  consumeQuota: (...a: unknown[]) => consumeQuota(...(a as [])),
+}));
+
 describe("translateResumeVersion", () => {
   const id = "11111111-1111-4111-8111-111111111111";
   beforeEach(() => {
@@ -310,5 +315,17 @@ describe("translateResumeVersion", () => {
     });
     expect(insertResumeVersion).not.toHaveBeenCalled();
     expect(model.doGenerateCalls).toHaveLength(0);
+  });
+
+  it("stops before the model call over the daily cap", async () => {
+    const { translateResumeVersion } = await import("./actions");
+    consumeQuota.mockResolvedValueOnce("exceeded");
+    expect(await translateResumeVersion({ id, targetLanguage: "fr" })).toEqual({
+      ok: false,
+      error: "quotaExceeded",
+    });
+    expect(consumeQuota).toHaveBeenCalledWith("user-1", "translateResume");
+    expect(model.doGenerateCalls).toHaveLength(0);
+    expect(insertResumeVersion).not.toHaveBeenCalled();
   });
 });
