@@ -1,7 +1,7 @@
 "use client";
 import { CalendarClock } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { dueDate, type BoardCard } from "@/features/tracker/board";
 import { Link } from "@/i18n/navigation";

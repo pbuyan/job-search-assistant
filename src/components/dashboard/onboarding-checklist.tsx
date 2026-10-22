@@ -1,4 +1,4 @@
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 import { CircleCheck, Circle, ChevronRight } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import {

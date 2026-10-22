@@ -24,7 +24,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { moveApplication } from "@/features/tracker/actions";
 import {
