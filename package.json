@@ -15,7 +15,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "eval": "tsx evals/run.ts",
-    "i18n:check": "tsx scripts/i18n-check.ts"
+    "i18n:check": "tsx scripts/i18n-check.ts",
+    "embed:profiles": "tsx scripts/embed-profiles.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.68",

@@ -1,6 +1,7 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, exists, ilike, inArray, notExists, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { applications, contacts, jobs } from "@/db/schema";
+import { applications, contacts, jobMatches, jobs, profiles } from "@/db/schema";
+import type { JobListParams } from "@/features/matching/schemas";
 
 export type NewJob = Omit<
   typeof jobs.$inferInsert,
@@ -50,19 +51,94 @@ export async function getJob(userId: string, jobId: string) {
 
 export type JobRow = NonNullable<Awaited<ReturnType<typeof getJob>>>;
 
-export async function listJobs(userId: string) {
+// Cosine similarity between a job and the user's profile (1 = same
+// direction), null when either has no embedding. Both are embedded with the
+// same model (src/lib/ai/embeddings.ts).
+//
+// Subqueries here are query builders, not hand-written SQL: in a select
+// field, Drizzle writes columns without their table, so a hand-written
+// `job_id = ${jobs.id}` would compare against the subquery's own "id".
+// Builders keep the table names.
+const similarityTo = (userId: string) => {
+  const profileEmbedding = db
+    .select({ embedding: profiles.embedding })
+    .from(profiles)
+    .where(eq(profiles.userId, userId));
+  return sql<number | null>`1 - (${jobs.embedding} <=> (${profileEmbedding}))`;
+};
+
+// The latest fit score for the job.
+const latestScore = (userId: string) => {
+  const latest = db
+    .select({ score: jobMatches.score })
+    .from(jobMatches)
+    .where(and(eq(jobMatches.jobId, jobs.id), eq(jobMatches.userId, userId)))
+    .orderBy(desc(jobMatches.createdAt))
+    .limit(1);
+  return sql<number | null>`(${latest})`;
+};
+
+const analyses = (userId: string) =>
+  db
+    .select({ one: sql`1` })
+    .from(jobMatches)
+    .where(and(eq(jobMatches.jobId, jobs.id), eq(jobMatches.userId, userId)));
+
+// LIKE treats % and _ as wildcards; a typed location is matched literally.
+const escapeLike = (v: string) => v.replace(/[\\%_]/g, "\\$&");
+
+// The user's jobs with their latest fit score and similarity to the profile,
+// filtered and sorted per the jobs list's URL parameters. `minSalary` (from
+// the user's preferences) is only used with params.salary: it hides jobs
+// whose posted maximum, in the same currency, is below it; jobs without a
+// posted salary stay.
+export async function listJobs(
+  userId: string,
+  params: Partial<JobListParams> = {},
+  minSalary?: { amount: number; currency: string } | null,
+) {
+  const similarity = similarityTo(userId);
+  const score = latestScore(userId);
+  const order =
+    params.sort === "match"
+      ? [sql`${similarity} desc nulls last`, desc(jobs.createdAt)]
+      : params.sort === "fit"
+        ? [sql`${score} desc nulls last`, desc(jobs.createdAt)]
+        : [desc(jobs.createdAt)];
+
   return db
     .select({
       id: jobs.id,
       company: jobs.company,
       title: jobs.title,
       location: jobs.location,
+      remote: jobs.remote,
+      salaryMin: jobs.salaryMin,
+      salaryMax: jobs.salaryMax,
+      salaryCurrency: jobs.salaryCurrency,
       createdAt: jobs.createdAt,
+      similarity,
+      score,
     })
     .from(jobs)
-    .where(eq(jobs.userId, userId))
-    .orderBy(desc(jobs.createdAt));
+    .where(
+      and(
+        eq(jobs.userId, userId),
+        params.remote ? eq(jobs.remote, params.remote) : undefined,
+        params.location
+          ? ilike(jobs.location, `%${escapeLike(params.location)}%`)
+          : undefined,
+        params.analyzed === "yes" ? exists(analyses(userId)) : undefined,
+        params.analyzed === "no" ? notExists(analyses(userId)) : undefined,
+        params.salary === "min" && minSalary
+          ? sql`not (${jobs.salaryMax} is not null and ${jobs.salaryCurrency} = ${minSalary.currency} and ${jobs.salaryMax} < ${minSalary.amount})`
+          : undefined,
+      ),
+    )
+    .orderBy(...order);
 }
+
+export type JobListRow = Awaited<ReturnType<typeof listJobs>>[number];
 
 // Deletes the job with its fit analyses, application and timeline (all
 // cascade) and the application's contacts. Tailored resume versions are kept,
