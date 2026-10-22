@@ -9,6 +9,7 @@ import {
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { AnalyzeButton } from "@/components/jobs/analyze-button";
+import { DeleteJobButton } from "@/components/jobs/delete-job-button";
 import { TrackJobButton } from "@/components/tracker/track-job-button";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -104,6 +105,13 @@ export default async function JobPage({
               {tTracker("track.tracked", {
                 status: tTracker(`status.${application.status}`),
               })}{" "}
+              <Link
+                href={`/tracker/${application.id}`}
+                className="underline underline-offset-4"
+              >
+                {tTracker("track.openApplication")}
+              </Link>{" "}
+              ·{" "}
               <Link href="/tracker" className="underline underline-offset-4">
                 {tTracker("track.open")}
               </Link>
@@ -350,6 +358,21 @@ export default async function JobPage({
           )}
         </details>
       ) : null}
+
+      <section
+        aria-labelledby="delete-heading"
+        className="flex flex-col gap-2 border-t pt-4"
+      >
+        <h2 id="delete-heading" className="text-start text-lg font-semibold">
+          {t("delete.heading")}
+        </h2>
+        <p className="text-start text-sm text-muted-foreground">
+          {t("delete.hint")}
+        </p>
+        <div>
+          <DeleteJobButton jobId={job.id} title={job.title || t("untitled")} />
+        </div>
+      </section>
     </div>
   );
 }

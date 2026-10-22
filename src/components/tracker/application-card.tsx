@@ -37,7 +37,7 @@ export function ApplicationCard({
         </p>
       ) : (
         <Link
-          href={`/jobs/${card.jobId}`}
+          href={`/tracker/${card.id}`}
           className="font-medium wrap-break-word hyphens-auto underline-offset-4 hover:underline"
         >
           {card.title || t("untitled")}

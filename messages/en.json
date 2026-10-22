@@ -71,6 +71,10 @@
     "tailor": {
       "title": "Tailor your resume",
       "description": "Tailor your resume to a job by reordering, trimming and rewording your own experience."
+    },
+    "application": {
+      "title": "Application",
+      "description": "One application: its status, next step, the resume you sent, its timeline and contacts."
     }
   },
   "Auth": { "tagline": "Match jobs to your experience and track every application." },
@@ -308,6 +312,20 @@
         "empty": "No tailored resume for this job yet.",
         "tailor": "Tailor resume"
       },
+      "delete": {
+        "heading": "Delete this job",
+        "hint": "Deletes the job, its fit analyses, and its application with the timeline and contacts. Tailored resumes are kept.",
+        "button": "Delete job",
+        "title": "Delete this job?",
+        "body": "“{title}” will be deleted with its fit analyses and application. Tailored resumes are kept. This can't be undone.",
+        "cancel": "Cancel",
+        "confirm": "Delete job",
+        "errors": {
+          "unauthorized": "Your session has expired. Sign in again.",
+          "notFound": "This job no longer exists.",
+          "failed": "The job couldn't be deleted. Try again."
+        }
+      },
       "requirementsTitle": "Extracted requirements",
       "requirementsHint": "As written in the posting.",
       "requirementGroups": { "mustHave": "Required", "niceToHave": "Preferred" }
@@ -487,10 +505,72 @@
       "adding": "Adding…",
       "tracked": "In your tracker: {status}.",
       "open": "Open tracker",
+      "openApplication": "Open application",
       "errors": {
         "unauthorized": "Your session has expired. Sign in again.",
         "notFound": "This job no longer exists.",
         "failed": "The job couldn't be added. Try again."
+      }
+    },
+    "application": {
+      "status": "Status",
+      "viewJob": "View the job",
+      "backToTracker": "Back to the tracker",
+      "details": "Details",
+      "sentResume": "Resume sent: <link>{name}</link>. It's locked so you keep what you sent.",
+      "appliedOn": "Applied on",
+      "resume": "Resume sent",
+      "noResume": "None",
+      "resumeHint": "Attaching a version locks it. You can still duplicate it to make changes.",
+      "nextStep": "Next step",
+      "nextStepDue": "Next step due",
+      "notes": "Notes",
+      "coverLetter": "Cover letter",
+      "save": "Save details",
+      "saving": "Saving…",
+      "saved": "Details saved.",
+      "timeline": "Timeline",
+      "addEvent": "Add to the timeline",
+      "eventType": "Type",
+      "eventDate": "Date",
+      "eventTitle": "Title",
+      "eventBody": "Details",
+      "addEventSubmit": "Add",
+      "eventTypes": {
+        "note": "Note",
+        "interview": "Interview",
+        "email": "Email",
+        "follow_up": "Follow-up",
+        "offer": "Offer"
+      },
+      "moved": "Moved to {status}",
+      "tracked": "Added to the tracker ({status})",
+      "remove": "Remove",
+      "removeEvent": "Remove {label} on {date}",
+      "contacts": "Contacts",
+      "noContacts": "No contacts yet.",
+      "addContact": "Add a contact",
+      "contactName": "Name",
+      "contactRole": "Role (recruiter, hiring manager…)",
+      "contactEmail": "Email",
+      "contactLinkedin": "LinkedIn profile URL",
+      "contactNotes": "Notes",
+      "addContactSubmit": "Add contact",
+      "contactProfile": "LinkedIn profile",
+      "removeContact": "Remove {name}",
+      "stopTrackingHeading": "Stop tracking",
+      "stopTrackingHint": "Removes this application, its timeline and contacts from your tracker. The job and your resumes stay.",
+      "stopTracking": "Stop tracking",
+      "stopTrackingTitle": "Stop tracking this application?",
+      "stopTrackingBody": "The application for “{title}”, its timeline and its contacts will be deleted. This can't be undone.",
+      "stopTrackingConfirm": "Stop tracking",
+      "cancel": "Cancel",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "invalid": "Some fields are invalid. Check dates, email and links, then try again.",
+        "invalidResume": "That resume version no longer exists. Choose another one.",
+        "notFound": "This no longer exists. Reload the page.",
+        "failed": "That didn't work. Try again."
       }
     },
     "errors": {

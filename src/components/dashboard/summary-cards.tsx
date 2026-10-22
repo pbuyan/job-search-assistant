@@ -91,8 +91,8 @@ export async function SummaryCards({
           ) : (
             <ul className="flex flex-col gap-1">
               {upcoming.map((step) => (
-                <li key={step.jobId}>
-                  <Link href={`/jobs/${step.jobId}`} className={rowLink}>
+                <li key={step.applicationId}>
+                  <Link href={`/tracker/${step.applicationId}`} className={rowLink}>
                     <span className="flex min-w-0 flex-col">
                       <span className="font-medium wrap-break-word">
                         {step.nextStep || jobLabel(step)}

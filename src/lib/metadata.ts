@@ -12,7 +12,8 @@ export type MetaPage =
   | "newJob"
   | "tracker"
   | "resumes"
-  | "tailor";
+  | "tailor"
+  | "application";
 
 const ogLocales: Record<Locale, string> = { en: "en_CA", fr: "fr_CA" };
 
