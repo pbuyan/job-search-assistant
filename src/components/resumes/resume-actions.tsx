@@ -2,7 +2,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { Field } from "@/components/profile/field";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -16,12 +16,24 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   deleteResumeVersion,
+  duplicateResumeVersion,
   renameResumeVersion,
   type ResumeVersionError,
 } from "@/features/tailoring/actions";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
 
-export function ResumeActions({ id, name }: { id: string; name: string }) {
+// Edit (or, when locked, duplicate), rename and delete. A locked version is
+// attached to an application, so its content stays as it was sent.
+export function ResumeActions({
+  id,
+  name,
+  locked,
+}: {
+  id: string;
+  name: string;
+  locked: boolean;
+}) {
   const t = useTranslations("Resumes.detail");
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -41,6 +53,15 @@ export function ResumeActions({ id, name }: { id: string; name: string }) {
     });
   }
 
+  function duplicate() {
+    setError(null);
+    startTransition(async () => {
+      const result = await duplicateResumeVersion(id);
+      if (result.ok) router.push(`/resumes/${result.id}/edit`);
+      else setError(result.error);
+    });
+  }
+
   function remove() {
     setError(null);
     startTransition(async () => {
@@ -53,9 +74,17 @@ export function ResumeActions({ id, name }: { id: string; name: string }) {
   return (
     <div className="flex flex-col gap-2">
       {editing ? (
-        <form onSubmit={rename} className="flex flex-wrap items-end gap-2" noValidate>
+        <form
+          onSubmit={rename}
+          className="flex flex-wrap items-end gap-2"
+          noValidate
+        >
           <Field label={t("name")} className="min-w-0 flex-1 basis-64">
-            <Input value={value} maxLength={120} onChange={(e) => setValue(e.target.value)} />
+            <Input
+              value={value}
+              maxLength={120}
+              onChange={(e) => setValue(e.target.value)}
+            />
           </Field>
           <Button type="submit" disabled={pending || !value.trim()}>
             {t("saveName")}
@@ -73,7 +102,28 @@ export function ResumeActions({ id, name }: { id: string; name: string }) {
         </form>
       ) : (
         <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" onClick={() => setEditing(true)}>
+          {locked ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={duplicate}
+              disabled={pending}
+            >
+              {t("duplicate")}
+            </Button>
+          ) : (
+            <Link
+              href={`/resumes/${id}/edit`}
+              className={cn(buttonVariants({ variant: "outline" }))}
+            >
+              {t("edit")}
+            </Link>
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setEditing(true)}
+          >
             {t("rename")}
           </Button>
           <Dialog>
@@ -83,10 +133,14 @@ export function ResumeActions({ id, name }: { id: string; name: string }) {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{t("deleteTitle")}</DialogTitle>
-                <DialogDescription>{t("deleteBody", { name })}</DialogDescription>
+                <DialogDescription>
+                  {t("deleteBody", { name })}
+                </DialogDescription>
               </DialogHeader>
               <DialogFooter>
-                <DialogClose render={<Button type="button" variant="outline" />}>
+                <DialogClose
+                  render={<Button type="button" variant="outline" />}
+                >
                   {t("cancel")}
                 </DialogClose>
                 <Button

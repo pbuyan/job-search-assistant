@@ -177,6 +177,11 @@
         "discard": "Discard import"
       }
     },
+    "export": {
+      "title": "Download as a resume:",
+      "pdf": "PDF",
+      "docx": "Word"
+    },
     "resumeLanguage": "Resume language",
     "resumeLanguageHint": "The language your resume content is written in. This is separate from the app language.",
     "languages": { "en": "English", "fr": "French" },
@@ -324,7 +329,27 @@
       "generating": "Tailoring…",
       "generatingHint": "This can take up to a minute.",
       "regenerate": "Generate again",
-      "reviewHint": "Review each achievement. You can edit the wording, go back to the original, remove it, or add achievements that were left out.",
+      "name": "Version name",
+      "save": "Save resume version",
+      "saving": "Saving…",
+      "discard": "Discard",
+      "goToProfile": "Go to your profile",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "notFound": "This job no longer exists.",
+        "noProfile": "Add your work experience and achievements to your profile first.",
+        "noRequirements": "This job has no extracted requirements to tailor against.",
+        "parseFailed": "The proposal couldn't be generated. Try again.",
+        "invalidTailoring": "The proposal used content that isn't in your profile, so it was discarded. Try again.",
+        "invalid": "Some fields are invalid. Check the version name and try again.",
+        "invalidSource": "Your profile changed since this proposal was made. Generate it again.",
+        "failed": "The resume version couldn't be saved. Try again.",
+        "emptyBullet": "An achievement is empty. Write something or remove it.",
+        "noBullets": "Include at least one achievement."
+      }
+    },
+    "editor": {
+      "hint": "Review each achievement. You can edit the wording, go back to the original, remove it, or add achievements that were left out.",
       "summary": "Summary",
       "original": "Original:",
       "useOriginal": "Use original",
@@ -341,21 +366,22 @@
       "present": "present",
       "bulletN": "Achievement {n}, {entry}",
       "skills": "Skills",
-      "name": "Version name",
-      "save": "Save resume version",
+      "sourceRemoved": "This achievement is no longer in your profile."
+    },
+    "edit": {
+      "title": "Edit “{name}”",
+      "save": "Save changes",
       "saving": "Saving…",
-      "discard": "Discard",
-      "goToProfile": "Go to your profile",
+      "cancel": "Back to the resume",
+      "stale": "This version uses achievements that are no longer in your profile, so it can't be edited. Tailor a new version instead.",
       "errors": {
         "unauthorized": "Your session has expired. Sign in again.",
-        "notFound": "This job no longer exists.",
+        "invalid": "Some fields are invalid. Try again.",
+        "notFound": "This resume version no longer exists.",
         "noProfile": "Add your work experience and achievements to your profile first.",
-        "noRequirements": "This job has no extracted requirements to tailor against.",
-        "parseFailed": "The proposal couldn't be generated. Try again.",
-        "invalidTailoring": "The proposal used content that isn't in your profile, so it was discarded. Try again.",
-        "invalid": "Some fields are invalid. Check the version name and try again.",
-        "invalidSource": "Your profile changed since this proposal was made. Generate it again.",
-        "failed": "The resume version couldn't be saved. Try again.",
+        "invalidSource": "Your profile changed while you were editing. Reload the page and try again.",
+        "locked": "This version was sent with an application, so it can't be changed. Duplicate it to edit a copy.",
+        "failed": "Your changes couldn't be saved. Try again.",
         "emptyBullet": "An achievement is empty. Write something or remove it.",
         "noBullets": "Include at least one achievement."
       }
@@ -385,8 +411,28 @@
         "invalid": "Enter a name.",
         "notFound": "This resume version no longer exists.",
         "failed": "That didn't work. Try again."
+      },
+      "edit": "Edit",
+      "duplicate": "Duplicate to edit",
+      "copyName": "{name} (copy)",
+      "lockedBadge": "Sent with an application",
+      "lockedHint": "This is the version you sent, so its content is locked. Duplicate it to make changes.",
+      "download": {
+        "pdf": "Download PDF",
+        "docx": "Download Word"
       }
     }
+  },
+  "ResumeExport": {
+    "summary": "Summary",
+    "work": "Experience",
+    "projects": "Projects",
+    "education": "Education",
+    "skills": "Skills",
+    "certifications": "Certifications",
+    "languages": "Languages",
+    "present": "Present",
+    "categorySuffix": ":"
   },
   "Tracker": {
     "title": "Tracker",

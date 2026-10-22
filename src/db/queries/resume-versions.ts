@@ -1,6 +1,24 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, notExists, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { jobs, resumeVersions, type TailoredResume } from "@/db/schema";
+import {
+  applications,
+  jobs,
+  resumeVersions,
+  type TailoredResume,
+} from "@/db/schema";
+
+// A version attached to an application is what was sent, so its content is
+// frozen; the user edits a copy instead.
+const attachedTo = (userId: string) =>
+  db
+    .select({ one: sql`1` })
+    .from(applications)
+    .where(
+      and(
+        eq(applications.resumeVersionId, resumeVersions.id),
+        eq(applications.userId, userId),
+      ),
+    );
 
 export async function insertResumeVersion(
   userId: string,
@@ -37,7 +55,13 @@ const versionColumns = {
 
 export async function getResumeVersion(userId: string, id: string) {
   const [row] = await db
-    .select({ ...versionColumns, data: resumeVersions.data })
+    .select({
+      ...versionColumns,
+      data: resumeVersions.data,
+      model: resumeVersions.model,
+      promptVersion: resumeVersions.promptVersion,
+      locked: sql<boolean>`exists (${attachedTo(userId)})`,
+    })
     .from(resumeVersions)
     .leftJoin(
       jobs,
@@ -91,4 +115,54 @@ export async function deleteResumeVersion(
     .where(and(eq(resumeVersions.id, id), eq(resumeVersions.userId, userId)))
     .returning({ id: resumeVersions.id });
   return rows.length > 0;
+}
+
+// Replaces the content unless the version is locked. One statement, so a
+// version attached concurrently can't be edited after the check.
+export async function updateResumeVersionData(
+  userId: string,
+  id: string,
+  data: TailoredResume,
+): Promise<"ok" | "locked" | "notFound"> {
+  const rows = await db
+    .update(resumeVersions)
+    .set({ data })
+    .where(
+      and(
+        eq(resumeVersions.id, id),
+        eq(resumeVersions.userId, userId),
+        notExists(attachedTo(userId)),
+      ),
+    )
+    .returning({ id: resumeVersions.id });
+  if (rows.length > 0) return "ok";
+  const [exists] = await db
+    .select({ id: resumeVersions.id })
+    .from(resumeVersions)
+    .where(and(eq(resumeVersions.id, id), eq(resumeVersions.userId, userId)))
+    .limit(1);
+  return exists ? "locked" : "notFound";
+}
+
+// An unlocked copy with the same content and provenance. Null when the
+// version isn't the user's.
+export async function duplicateResumeVersion(
+  userId: string,
+  id: string,
+  name: string,
+): Promise<string | null> {
+  const [source] = await db
+    .select({
+      jobId: resumeVersions.jobId,
+      data: resumeVersions.data,
+      isAiGenerated: resumeVersions.isAiGenerated,
+      model: resumeVersions.model,
+      promptVersion: resumeVersions.promptVersion,
+      language: resumeVersions.language,
+    })
+    .from(resumeVersions)
+    .where(and(eq(resumeVersions.id, id), eq(resumeVersions.userId, userId)))
+    .limit(1);
+  if (!source) return null;
+  return insertResumeVersion(userId, { ...source, name });
 }
