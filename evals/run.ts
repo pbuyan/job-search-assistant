@@ -1,4 +1,4 @@
-// pnpm eval [--suite fit|tailor|all] [--case <id>] [--concurrency <n>]
+// pnpm eval [--suite fit|tailor|translate|all] [--case <id>] [--concurrency <n>]
 //
 // fit: runs the real extraction (parseJob) and fit analysis (analyzeFit) on
 // every case in CASES and checks the posting language, the score range, that
@@ -8,6 +8,11 @@
 // every bullet cites a profile bullet, that no number was added, that the
 // answer was valid on the first attempt, and that the resume stayed in the
 // profile's language.
+// translate: translates each fixture profile (as a resume version) with
+// translateResume into the other language and checks that entries and
+// bullets line up with the source, that every bullet keeps its numbers, that
+// French bullets don't open on a bare past participle, that the answer was
+// valid on the first attempt, and the output language.
 // Prints a table per suite and exits 1 if any check fails. Full results
 // (including model output) go to evals/results/, which is gitignored.
 //
@@ -22,12 +27,20 @@ import { profileDataSchema } from "@/prompts/schemas";
 import {
   CASES,
   TAILOR_CASES,
+  TRANSLATE_CASES,
   type EvalCase,
   type PostingId,
   type ProfileId,
   type TailorCase,
+  type TranslateCase,
 } from "./cases";
-import { checkFit, checkParse, checkTailor, type Check } from "./lib/checks";
+import {
+  checkFit,
+  checkParse,
+  checkTailor,
+  checkTranslate,
+  type Check,
+} from "./lib/checks";
 
 // Must run before src/lib/ai/models.ts is loaded: it reads the env at import.
 config({ path: ".env.local", quiet: true });
@@ -65,6 +78,14 @@ type TailorResult = {
   plan?: unknown;
 };
 
+type TranslateResult = {
+  case: TranslateCase;
+  checks: Check[];
+  error?: string;
+  problems?: unknown;
+  resume?: unknown;
+};
+
 const passed = (r: { error?: string; checks: Check[] }) =>
   !r.error && r.checks.every((c) => c.pass);
 
@@ -93,7 +114,7 @@ async function main() {
       concurrency: { type: "string", default: "3" },
     },
   });
-  if (!["fit", "tailor", "all"].includes(values.suite)) {
+  if (!["fit", "tailor", "translate", "all"].includes(values.suite)) {
     console.error(`Unknown suite: ${values.suite}`);
     process.exit(2);
   }
@@ -105,7 +126,8 @@ async function main() {
         : all;
   const cases = pick(CASES, "fit");
   const tailorCases = pick(TAILOR_CASES, "tailor");
-  if (cases.length + tailorCases.length === 0) {
+  const translateCases = pick(TRANSLATE_CASES, "translate");
+  if (cases.length + tailorCases.length + translateCases.length === 0) {
     console.error(`Unknown case: ${values.case}`);
     process.exit(2);
   }
@@ -121,6 +143,11 @@ async function main() {
   const { PROMPT_VERSION: tailorVersion } = await import(
     "@/prompts/tailor-resume"
   );
+  const { translateResume } = await import("@/features/translation/translate");
+  const { PROMPT_VERSION: translateVersion } = await import(
+    "@/prompts/translate-resume"
+  );
+  const { assembleResume } = await import("@/features/tailoring/assemble");
   const { MODEL_IDS } = await import("@/lib/ai/models");
 
   // Each posting is parsed once per run, however many cases use it.
@@ -213,12 +240,61 @@ async function main() {
     },
   );
 
+  const translateResults = await pool(
+    translateCases,
+    concurrency,
+    async (c): Promise<TranslateResult> => {
+      const profile = loadProfile(c.profile);
+      // The whole profile as a resume version: every entry and bullet.
+      const source = assembleResume(
+        {
+          summary: profile.basics.summary,
+          work: profile.work.map((w) => ({
+            sourceWorkId: w.id,
+            bullets: w.bullets.map((b) => ({ sourceBulletId: b.id, text: b.text })),
+          })),
+          projects: (profile.projects ?? []).map((p) => ({
+            sourceProjectId: p.id,
+            bullets: p.bullets.map((b) => ({ sourceBulletId: b.id, text: b.text })),
+          })),
+          skills: profile.skills,
+        },
+        profile,
+      );
+      const translated = await translateResume({
+        resume: source,
+        sourceLanguage: c.from,
+        targetLanguage: c.to,
+      });
+      if (!translated.ok)
+        return {
+          case: c,
+          checks: [],
+          error: `translate:${translated.error}`,
+          problems: translated.problems,
+        };
+      return {
+        case: c,
+        checks: checkTranslate({
+          source,
+          out: translated.resume,
+          attempts: translated.attempts,
+          language: c.to,
+        }),
+        resume: translated.resume,
+      };
+    },
+  );
+
   if (results.length > 0) printTable(results);
   if (tailorResults.length > 0) printTailorTable(tailorResults);
-  const failures = [...results, ...tailorResults].filter((r) => !passed(r));
-  const total = results.length + tailorResults.length;
+  if (translateResults.length > 0) printTranslateTable(translateResults);
+  const failures = [...results, ...tailorResults, ...translateResults].filter(
+    (r) => !passed(r),
+  );
+  const total = results.length + tailorResults.length + translateResults.length;
   console.log(
-    `\n${total - failures.length}/${total} passed in ${Math.round((Date.now() - started) / 1000)} s · ${parseVersion} · ${fitVersion} · ${tailorVersion} · ${MODEL_IDS.parseJob} / ${MODEL_IDS.fitAnalysis} / ${MODEL_IDS.tailorResume}`,
+    `\n${total - failures.length}/${total} passed in ${Math.round((Date.now() - started) / 1000)} s · ${parseVersion} · ${fitVersion} · ${tailorVersion} · ${translateVersion} · ${MODEL_IDS.parseJob} / ${MODEL_IDS.fitAnalysis} / ${MODEL_IDS.tailorResume} / ${MODEL_IDS.translateResume}`,
   );
   for (const r of failures) {
     const reasons = [
@@ -240,12 +316,18 @@ async function main() {
           parseJob: parseVersion,
           fitAnalysis: fitVersion,
           tailorResume: tailorVersion,
+          translateResume: translateVersion,
         },
         models: MODEL_IDS,
         passed: total - failures.length,
         total,
         results: results.map((r) => ({ ...r, case: r.case.id, pass: passed(r) })),
         tailorResults: tailorResults.map((r) => ({
+          ...r,
+          case: r.case.id,
+          pass: passed(r),
+        })),
+        translateResults: translateResults.map((r) => ({
           ...r,
           case: r.case.id,
           pass: passed(r),
@@ -286,6 +368,23 @@ function printTailorTable(results: TailorResult[]) {
       `${r.case.posting.slice(0, 2)}→${r.case.profile.slice(-2)}`,
       r.error ?? mark(r, "sources"),
       mark(r, "numbers"),
+      mark(r, "firstTry"),
+      mark(r, "language"),
+      passed(r) ? "PASS" : "FAIL",
+    ]),
+  );
+}
+
+function printTranslateTable(results: TranslateResult[]) {
+  console.log("");
+  printRows(
+    ["case", "from→to", "structure", "numbers", "style", "1st try", "lang", "result"],
+    results.map((r) => [
+      r.case.id,
+      `${r.case.from}→${r.case.to}`,
+      r.error ?? mark(r, "structure"),
+      mark(r, "numbers"),
+      mark(r, "style"),
       mark(r, "firstTry"),
       mark(r, "language"),
       passed(r) ? "PASS" : "FAIL",

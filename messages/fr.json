@@ -383,8 +383,10 @@
         "locked": "Cette version a été envoyée avec une candidature; elle ne peut donc pas être modifiée. Dupliquez-la pour modifier une copie.",
         "failed": "Vos modifications n'ont pas pu être enregistrées. Réessayez.",
         "emptyBullet": "Une réalisation est vide. Rédigez-la ou retirez-la.",
-        "noBullets": "Incluez au moins une réalisation."
-      }
+        "noBullets": "Incluez au moins une réalisation.",
+        "otherLanguage": "Cette version est dans une autre langue que votre profil; elle ne peut donc pas être modifiée ici. Modifiez la version d'origine, puis traduisez-la de nouveau."
+      },
+      "otherLanguage": "Cette version est dans une autre langue que votre profil; elle ne peut donc pas être modifiée ici. Modifiez la version d'origine, puis traduisez-la de nouveau."
     },
     "preview": {
       "work": "Expérience",
@@ -396,6 +398,7 @@
     "detail": {
       "language": "CV en {language}",
       "tailored": "Adapté",
+      "translated": "Traduit",
       "created": "Créé le {date}",
       "forJob": "Adapté pour",
       "name": "Nom de la version",
@@ -420,6 +423,23 @@
       "download": {
         "pdf": "Télécharger en PDF",
         "docx": "Télécharger en Word"
+      },
+      "translatedFrom": "Traduit de <link>{name}</link>"
+    },
+    "translate": {
+      "hint": "La traduction crée une nouvelle version dans l'autre langue; celle-ci reste telle quelle. Le texte du CV est envoyé à Claude (Anthropic). Les noms, les employeurs et les dates restent tels quels.",
+      "button": "Traduire en {language}",
+      "translating": "Traduction en cours…",
+      "translatingHint": "Cela peut prendre jusqu'à une minute.",
+      "name": "{name} ({language})",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "invalid": "Cette langue n'est pas offerte.",
+        "notFound": "Cette version du CV n'existe plus.",
+        "sameLanguage": "Cette version est déjà dans cette langue.",
+        "parseFailed": "La traduction n'a pas pu être effectuée. Réessayez.",
+        "invalidTranslation": "La traduction ne correspondait pas à l'original (une réalisation ou un nombre manquait); elle a donc été rejetée. Réessayez.",
+        "failed": "La traduction n'a pas pu être enregistrée. Réessayez."
       }
     }
   },

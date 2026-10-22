@@ -24,15 +24,19 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 
 // Edit (or, when locked, duplicate), rename and delete. A locked version is
-// attached to an application, so its content stays as it was sent.
+// attached to an application, so its content stays as it was sent. A
+// version that isn't `editable` (a translation, which can't be rebuilt from
+// the profile) offers neither.
 export function ResumeActions({
   id,
   name,
   locked,
+  editable,
 }: {
   id: string;
   name: string;
   locked: boolean;
+  editable: boolean;
 }) {
   const t = useTranslations("Resumes.detail");
   const router = useRouter();
@@ -102,7 +106,7 @@ export function ResumeActions({
         </form>
       ) : (
         <div className="flex flex-wrap gap-2">
-          {locked ? (
+          {!editable ? null : locked ? (
             <Button
               type="button"
               variant="outline"

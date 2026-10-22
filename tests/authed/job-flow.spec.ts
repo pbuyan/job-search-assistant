@@ -3,7 +3,7 @@ import { gotoSignedIn } from "../support";
 
 // Full journey through the real AI pipeline (Claude + Voyage): slow and billed,
 // so opt-in with E2E_AI=1. Needs the profile saved by profile.spec.ts. Each run
-// leaves one job, one application and one resume version on the test user.
+// leaves one job, one application and two resume versions on the test user.
 test.skip(!process.env.E2E_AI, "set E2E_AI=1 to run the AI flow");
 test.describe.configure({ mode: "serial", timeout: 240_000 });
 
@@ -103,5 +103,23 @@ test("pastes a posting, analyzes fit, tracks it, and tailors a resume", async ({
     .fill("Reworded by the e2e test");
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page).toHaveURL(/\/en\/resumes\/[0-9a-f-]{36}$/);
+  await expect(page.getByText("Reworded by the e2e test")).toBeVisible();
+
+  // Translating creates a new, linked version; the original is unchanged.
+  const originalUrl = page.url();
+  await page.getByRole("button", { name: "Translate to French" }).click();
+  await expect(page.getByText(/^Translated from/)).toBeVisible({
+    timeout: 120_000,
+  });
+  expect(page.url()).not.toBe(originalUrl);
+  await expect(page.getByText("Resume in French")).toBeVisible();
+  // A translation can't be rebuilt from the English profile, so no Edit.
+  await expect(
+    page.getByRole("link", { name: "Edit", exact: true }),
+  ).toHaveCount(0);
+  await page
+    .getByRole("link", { name: `E2E ${jobTitle}`, exact: true })
+    .click();
+  await expect(page).toHaveURL(originalUrl);
   await expect(page.getByText("Reworded by the e2e test")).toBeVisible();
 });

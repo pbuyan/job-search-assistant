@@ -383,8 +383,10 @@
         "locked": "This version was sent with an application, so it can't be changed. Duplicate it to edit a copy.",
         "failed": "Your changes couldn't be saved. Try again.",
         "emptyBullet": "An achievement is empty. Write something or remove it.",
-        "noBullets": "Include at least one achievement."
-      }
+        "noBullets": "Include at least one achievement.",
+        "otherLanguage": "This version is in a different language from your profile, so it can't be edited here. Edit the original version and translate it again."
+      },
+      "otherLanguage": "This version is in a different language from your profile, so it can't be edited here. Edit the original version and translate it again."
     },
     "preview": {
       "work": "Experience",
@@ -396,6 +398,7 @@
     "detail": {
       "language": "Resume in {language}",
       "tailored": "Tailored",
+      "translated": "Translated",
       "created": "Created {date}",
       "forJob": "Tailored for",
       "name": "Version name",
@@ -420,6 +423,23 @@
       "download": {
         "pdf": "Download PDF",
         "docx": "Download Word"
+      },
+      "translatedFrom": "Translated from <link>{name}</link>"
+    },
+    "translate": {
+      "hint": "Translating creates a new version in the other language; this one stays as it is. The resume text is sent to Claude (Anthropic). Names, employers and dates are kept as they are.",
+      "button": "Translate to {language}",
+      "translating": "Translating…",
+      "translatingHint": "This can take up to a minute.",
+      "name": "{name} ({language})",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "invalid": "That language isn't available.",
+        "notFound": "This resume version no longer exists.",
+        "sameLanguage": "This version is already in that language.",
+        "parseFailed": "The translation couldn't be completed. Try again.",
+        "invalidTranslation": "The translation didn't match the original (an achievement or a number was lost), so it was discarded. Try again.",
+        "failed": "The translation couldn't be saved. Try again."
       }
     }
   },

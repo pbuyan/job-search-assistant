@@ -1,4 +1,5 @@
 import { and, desc, eq, notExists, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import {
   applications,
@@ -30,6 +31,7 @@ export async function insertResumeVersion(
     model: string | null;
     promptVersion: string | null;
     language: string;
+    sourceVersionId?: string | null;
   },
 ): Promise<string> {
   const [row] = await db
@@ -53,6 +55,8 @@ const versionColumns = {
   jobCompany: jobs.company,
 };
 
+const sourceVersions = alias(resumeVersions, "source_versions");
+
 export async function getResumeVersion(userId: string, id: string) {
   const [row] = await db
     .select({
@@ -61,11 +65,21 @@ export async function getResumeVersion(userId: string, id: string) {
       model: resumeVersions.model,
       promptVersion: resumeVersions.promptVersion,
       locked: sql<boolean>`exists (${attachedTo(userId)})`,
+      // A translation's source, if it still exists.
+      sourceVersionId: sourceVersions.id,
+      sourceVersionName: sourceVersions.name,
     })
     .from(resumeVersions)
     .leftJoin(
       jobs,
       and(eq(jobs.id, resumeVersions.jobId), eq(jobs.userId, userId)),
+    )
+    .leftJoin(
+      sourceVersions,
+      and(
+        eq(sourceVersions.id, resumeVersions.sourceVersionId),
+        eq(sourceVersions.userId, userId),
+      ),
     )
     .where(and(eq(resumeVersions.id, id), eq(resumeVersions.userId, userId)))
     .limit(1);
@@ -159,6 +173,7 @@ export async function duplicateResumeVersion(
       model: resumeVersions.model,
       promptVersion: resumeVersions.promptVersion,
       language: resumeVersions.language,
+      sourceVersionId: resumeVersions.sourceVersionId,
     })
     .from(resumeVersions)
     .where(and(eq(resumeVersions.id, id), eq(resumeVersions.userId, userId)))

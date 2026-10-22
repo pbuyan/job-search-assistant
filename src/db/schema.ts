@@ -2,7 +2,7 @@
 // Requires: CREATE EXTENSION IF NOT EXISTS vector;
 import {
   pgTable, pgEnum, text, uuid, timestamp, integer, boolean,
-  jsonb, vector, index, uniqueIndex, date,
+  jsonb, vector, index, uniqueIndex, date, type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -117,6 +117,9 @@ export const resumeVersions = pgTable("resume_versions", {
   promptVersion: text("prompt_version"),
   exportedFileKey: text("exported_file_key"),         // PDF/DOCX actually sent
   language: text("language").default("en").notNull(), // resume language
+  // Set on a translation: the version it was translated from.
+  sourceVersionId: uuid("source_version_id")
+    .references((): AnyPgColumn => resumeVersions.id, { onDelete: "set null" }),
   ...timestamps,
 }, (t) => [index("resume_versions_user_idx").on(t.userId)]);
 

@@ -1,0 +1,2 @@
+ALTER TABLE "resume_versions" ADD COLUMN "source_version_id" uuid;--> statement-breakpoint
+ALTER TABLE "resume_versions" ADD CONSTRAINT "resume_versions_source_version_id_resume_versions_id_fk" FOREIGN KEY ("source_version_id") REFERENCES "public"."resume_versions"("id") ON DELETE set null ON UPDATE no action;

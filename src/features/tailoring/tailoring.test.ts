@@ -27,9 +27,12 @@ const updateResumeVersionData = vi.fn(
 const duplicateResumeVersion = vi.fn(
   async () => "33333333-3333-4333-8333-333333333333",
 );
-const getResumeVersion = vi.fn(async (): Promise<{ name: string } | null> => ({
-  name: "Northwind",
-}));
+const getResumeVersion = vi.fn(
+  async (): Promise<{ name: string; language: string } | null> => ({
+    name: "Northwind",
+    language: "en",
+  }),
+);
 vi.mock("@/db/queries/resume-versions", () => ({
   insertResumeVersion: (...args: unknown[]) =>
     insertResumeVersion(...(args as [])),
@@ -140,6 +143,9 @@ describe("numbersIn", () => {
       new Set(["1200"]),
     );
     expect(numbersIn("3 5")).toEqual(new Set(["3", "5"]));
+    expect(numbersIn("40 % dans 1 200 magasins en 2019")).toEqual(
+      new Set(["40", "1200", "2019"]),
+    );
   });
 });
 
@@ -421,6 +427,20 @@ describe("saveResumeEdits", () => {
     expect(await saveResumeEdits({ id, plan: forged })).toEqual({
       ok: false,
       error: "invalidSource",
+    });
+    expect(updateResumeVersionData).not.toHaveBeenCalled();
+  });
+
+  it("refuses to rebuild a translation from a profile in another language", async () => {
+    const { saveResumeEdits } = await import("./actions");
+    updateResumeVersionData.mockClear();
+    getResumeVersion.mockResolvedValueOnce({
+      name: "Northwind (French)",
+      language: "fr",
+    });
+    expect(await saveResumeEdits({ id, plan: good })).toEqual({
+      ok: false,
+      error: "otherLanguage",
     });
     expect(updateResumeVersionData).not.toHaveBeenCalled();
   });

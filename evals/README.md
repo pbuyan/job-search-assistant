@@ -1,11 +1,11 @@
 # Prompt evals
 
 `pnpm eval` runs the real job extraction (`parse-job`), fit analysis
-(`fit-analysis`) and resume tailoring (`tailor-resume`) on every case in
-`cases.ts`, using live Claude calls (real cost; needs `.env.local`). Run it before and after any prompt change and
+(`fit-analysis`), resume tailoring (`tailor-resume`) and resume translation
+(`translate-resume`) on every case in `cases.ts`, using live Claude calls (real cost; needs `.env.local`). Run it before and after any prompt change and
 report both tables.
 
-- `pnpm eval --suite fit|tailor` runs one suite (default: both).
+- `pnpm eval --suite fit|tailor|translate` runs one suite (default: all).
 - `pnpm eval --case <id>` runs a single case.
 - `pnpm eval --concurrency <n>` runs n cases at a time (default 3).
 
@@ -27,6 +27,19 @@ report both tables.
 | `numbers` | no bullet contains a number its source bullet doesn't                    |
 | `1st try` | the first answer was valid; `tailorResume` retries once, hiding slips    |
 | `lang`    | the bullets stay in the profile's language, whatever the posting's       |
+
+## Checks per translation case (`TRANSLATE_CASES`)
+
+Each fixture profile, as a resume version with every entry, is translated
+into the other language.
+
+| column      | passes when                                                                 |
+| ----------- | --------------------------------------------------------------------------- |
+| `structure` | entries, employers and bullet ids line up with the source, in order         |
+| `numbers`   | every bullet keeps exactly the numbers of its source (formatting may vary)  |
+| `style`     | no French bullet opens on a bare past participle ("Dirigé…", an anglicism)  |
+| `1st try`   | the first answer was valid; `translateResume` retries once, hiding slips    |
+| `lang`      | the bullets are in the target language                                      |
 
 `?` in `lang` means the text was too short to detect; it doesn't fail the
 case. The process exits 1 if any case fails. Full results, including the
