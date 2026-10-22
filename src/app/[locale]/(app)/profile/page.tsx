@@ -2,13 +2,16 @@ import type { Metadata } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Download } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ProfileForm } from "@/components/profile/profile-form";
+import { buttonVariants } from "@/components/ui/button";
 import { getProfile } from "@/db/queries/profile";
 import { RESUME_LANGUAGES, type ProfileSaveInput } from "@/features/profile/schemas";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { pageMetadata } from "@/lib/metadata";
+import { cn } from "@/lib/utils";
 
 const emptyProfile: ProfileSaveInput = {
   // Resume language is its own setting; a new profile starts at the default
@@ -53,6 +56,23 @@ export default async function ProfilePage({
     <>
       <h1 className="text-start text-2xl font-semibold">{t("title")}</h1>
       <p className="text-start text-muted-foreground">{t("description")}</p>
+      {stored ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-start text-sm">{t("export.title")}</span>
+          {/* File downloads from a route handler, so plain links. */}
+          {(["pdf", "docx"] as const).map((format) => (
+            <a
+              key={format}
+              href={`/api/profile/export?format=${format}`}
+              download
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              <Download aria-hidden />
+              {t(`export.${format}`)}
+            </a>
+          ))}
+        </div>
+      ) : null}
       <ProfileForm initial={initial} />
     </>
   );

@@ -177,6 +177,11 @@
         "discard": "Annuler l'importation"
       }
     },
+    "export": {
+      "title": "Télécharger en tant que CV :",
+      "pdf": "PDF",
+      "docx": "Word"
+    },
     "resumeLanguage": "Langue du CV",
     "resumeLanguageHint": "La langue dans laquelle le contenu de votre CV est rédigé. Elle est distincte de la langue de l'application.",
     "languages": { "en": "Anglais", "fr": "Français" },
@@ -324,7 +329,27 @@
       "generating": "Adaptation en cours…",
       "generatingHint": "Cela peut prendre jusqu'à une minute.",
       "regenerate": "Générer de nouveau",
-      "reviewHint": "Révisez chaque réalisation. Vous pouvez modifier la formulation, revenir à l'original, la retirer ou ajouter des réalisations laissées de côté.",
+      "name": "Nom de la version",
+      "save": "Enregistrer la version du CV",
+      "saving": "Enregistrement…",
+      "discard": "Abandonner",
+      "goToProfile": "Aller à votre profil",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "notFound": "Cet emploi n'existe plus.",
+        "noProfile": "Ajoutez d'abord votre expérience professionnelle et vos réalisations à votre profil.",
+        "noRequirements": "Cet emploi n'a aucune exigence extraite pour adapter le CV.",
+        "parseFailed": "La proposition n'a pas pu être générée. Réessayez.",
+        "invalidTailoring": "La proposition utilisait du contenu absent de votre profil; elle a donc été rejetée. Réessayez.",
+        "invalid": "Certains champs sont invalides. Vérifiez le nom de la version et réessayez.",
+        "invalidSource": "Votre profil a changé depuis cette proposition. Générez-la de nouveau.",
+        "failed": "La version du CV n'a pas pu être enregistrée. Réessayez.",
+        "emptyBullet": "Une réalisation est vide. Rédigez-la ou retirez-la.",
+        "noBullets": "Incluez au moins une réalisation."
+      }
+    },
+    "editor": {
+      "hint": "Révisez chaque réalisation. Vous pouvez modifier la formulation, revenir à l'original, la retirer ou ajouter des réalisations laissées de côté.",
       "summary": "Résumé",
       "original": "Original :",
       "useOriginal": "Revenir à l'original",
@@ -341,21 +366,22 @@
       "present": "aujourd'hui",
       "bulletN": "Réalisation {n}, {entry}",
       "skills": "Compétences",
-      "name": "Nom de la version",
-      "save": "Enregistrer la version du CV",
+      "sourceRemoved": "Cette réalisation ne figure plus dans votre profil."
+    },
+    "edit": {
+      "title": "Modifier « {name} »",
+      "save": "Enregistrer les modifications",
       "saving": "Enregistrement…",
-      "discard": "Abandonner",
-      "goToProfile": "Aller à votre profil",
+      "cancel": "Retour au CV",
+      "stale": "Cette version utilise des réalisations qui ne figurent plus dans votre profil; elle ne peut donc pas être modifiée. Adaptez plutôt une nouvelle version.",
       "errors": {
         "unauthorized": "Votre session a expiré. Reconnectez-vous.",
-        "notFound": "Cet emploi n'existe plus.",
+        "invalid": "Certains champs sont invalides. Réessayez.",
+        "notFound": "Cette version du CV n'existe plus.",
         "noProfile": "Ajoutez d'abord votre expérience professionnelle et vos réalisations à votre profil.",
-        "noRequirements": "Cet emploi n'a aucune exigence extraite pour adapter le CV.",
-        "parseFailed": "La proposition n'a pas pu être générée. Réessayez.",
-        "invalidTailoring": "La proposition utilisait du contenu absent de votre profil; elle a donc été rejetée. Réessayez.",
-        "invalid": "Certains champs sont invalides. Vérifiez le nom de la version et réessayez.",
-        "invalidSource": "Votre profil a changé depuis cette proposition. Générez-la de nouveau.",
-        "failed": "La version du CV n'a pas pu être enregistrée. Réessayez.",
+        "invalidSource": "Votre profil a changé pendant la modification. Rechargez la page et réessayez.",
+        "locked": "Cette version a été envoyée avec une candidature; elle ne peut donc pas être modifiée. Dupliquez-la pour modifier une copie.",
+        "failed": "Vos modifications n'ont pas pu être enregistrées. Réessayez.",
         "emptyBullet": "Une réalisation est vide. Rédigez-la ou retirez-la.",
         "noBullets": "Incluez au moins une réalisation."
       }
@@ -385,8 +411,28 @@
         "invalid": "Entrez un nom.",
         "notFound": "Cette version du CV n'existe plus.",
         "failed": "L'opération a échoué. Réessayez."
+      },
+      "edit": "Modifier",
+      "duplicate": "Dupliquer pour modifier",
+      "copyName": "{name} (copie)",
+      "lockedBadge": "Envoyé avec une candidature",
+      "lockedHint": "C'est la version que vous avez envoyée; son contenu est donc verrouillé. Dupliquez-la pour y apporter des modifications.",
+      "download": {
+        "pdf": "Télécharger en PDF",
+        "docx": "Télécharger en Word"
       }
     }
+  },
+  "ResumeExport": {
+    "summary": "Profil",
+    "work": "Expérience professionnelle",
+    "projects": "Projets",
+    "education": "Formation",
+    "skills": "Compétences",
+    "certifications": "Certifications",
+    "languages": "Langues",
+    "present": "Aujourd'hui",
+    "categorySuffix": "\u00a0:"
   },
   "Tracker": {
     "title": "Suivi",

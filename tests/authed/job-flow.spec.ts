@@ -69,7 +69,9 @@ test("pastes a posting, analyzes fit, tracks it, and tailors a resume", async ({
   await page.getByRole("link", { name: "Tailor resume" }).click();
   await expect(page).toHaveURL(/\/en\/resumes\/new\?jobId=/);
   await page.getByRole("button", { name: "Generate proposal" }).click();
-  const firstBullet = page.getByRole("textbox", { name: /^Achievement 1,/ }).first();
+  const firstBullet = page
+    .getByRole("textbox", { name: /^Achievement 1,/ })
+    .first();
   await expect(firstBullet).toBeVisible({ timeout: 120_000 });
 
   // A user edit is kept; going back to the original restores the source text.
@@ -87,4 +89,19 @@ test("pastes a posting, analyzes fit, tracks it, and tailors a resume", async ({
   await expect(
     page.getByRole("heading", { level: 1, name: `E2E ${jobTitle}` }),
   ).toBeVisible();
+
+  const download = page.waitForEvent("download");
+  await page.getByRole("link", { name: "Download Word" }).click();
+  expect((await download).suggestedFilename()).toBe(`E2E ${jobTitle}.docx`);
+
+  // Editing a saved (unsent) version keeps the user's wording.
+  await page.getByRole("link", { name: "Edit", exact: true }).click();
+  await expect(page).toHaveURL(/\/en\/resumes\/[0-9a-f-]{36}\/edit$/);
+  await page
+    .getByRole("textbox", { name: /^Achievement 1,/ })
+    .first()
+    .fill("Reworded by the e2e test");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page).toHaveURL(/\/en\/resumes\/[0-9a-f-]{36}$/);
+  await expect(page.getByText("Reworded by the e2e test")).toBeVisible();
 });

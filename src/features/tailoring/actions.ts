@@ -1,14 +1,18 @@
 "use server";
 
 import { auth } from "@clerk/nextjs/server";
+import { getTranslations } from "next-intl/server";
 import { z } from "zod";
 import { getJob } from "@/db/queries/jobs";
 import { getLatestMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
 import {
   deleteResumeVersion as deleteResumeVersionRow,
+  duplicateResumeVersion as duplicateResumeVersionRow,
+  getResumeVersion,
   insertResumeVersion,
   renameResumeVersion as renameResumeVersionRow,
+  updateResumeVersionData,
 } from "@/db/queries/resume-versions";
 import { MODEL_IDS } from "@/lib/ai/models";
 import {
@@ -84,7 +88,9 @@ export type SaveResumeVersionError =
 // can't supply employers, titles or dates.
 export async function saveResumeVersion(
   input: unknown,
-): Promise<{ ok: true; id: string } | { ok: false; error: SaveResumeVersionError }> {
+): Promise<
+  { ok: true; id: string } | { ok: false; error: SaveResumeVersionError }
+> {
   const { userId } = await auth();
   if (!userId) return { ok: false, error: "unauthorized" };
   const parsed = saveInput.safeParse(input);
@@ -116,7 +122,8 @@ export async function saveResumeVersion(
   }
 }
 
-export type ResumeVersionError = "unauthorized" | "invalid" | "notFound" | "failed";
+export type ResumeVersionError =
+  "unauthorized" | "invalid" | "notFound" | "failed";
 type Result = { ok: true } | { ok: false; error: ResumeVersionError };
 
 const renameInput = z.object({
@@ -130,7 +137,11 @@ export async function renameResumeVersion(input: unknown): Promise<Result> {
   const parsed = renameInput.safeParse(input);
   if (!parsed.success) return { ok: false, error: "invalid" };
   try {
-    const renamed = await renameResumeVersionRow(userId, parsed.data.id, parsed.data.name);
+    const renamed = await renameResumeVersionRow(
+      userId,
+      parsed.data.id,
+      parsed.data.name,
+    );
     return renamed ? { ok: true } : { ok: false, error: "notFound" };
   } catch {
     return { ok: false, error: "failed" };
@@ -145,6 +156,69 @@ export async function deleteResumeVersion(id: unknown): Promise<Result> {
   try {
     const deleted = await deleteResumeVersionRow(userId, parsed.data);
     return deleted ? { ok: true } : { ok: false, error: "notFound" };
+  } catch {
+    return { ok: false, error: "failed" };
+  }
+}
+
+const editInput = z.object({ id: z.uuid(), plan: tailorPlanSchema });
+
+export type SaveResumeEditsError =
+  | "unauthorized"
+  | "invalid"
+  | "notFound"
+  | "noProfile"
+  | "invalidSource"
+  | "locked"
+  | "failed";
+
+// The user's own edits to a saved version. Same rule as saving a proposal:
+// every bullet must cite the current master profile, and the resume is
+// rebuilt from it here. A version attached to an application is locked.
+export async function saveResumeEdits(
+  input: unknown,
+): Promise<{ ok: true } | { ok: false; error: SaveResumeEditsError }> {
+  const { userId } = await auth();
+  if (!userId) return { ok: false, error: "unauthorized" };
+  const parsed = editInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalid" };
+  const { id, plan } = parsed.data;
+
+  const profile = await getProfile(userId);
+  if (!profile) return { ok: false, error: "noProfile" };
+  if (validateTailoringStructure(plan, profile.data).length > 0)
+    return { ok: false, error: "invalidSource" };
+
+  try {
+    const result = await updateResumeVersionData(
+      userId,
+      id,
+      assembleResume(plan, profile.data),
+    );
+    return result === "ok" ? { ok: true } : { ok: false, error: result };
+  } catch {
+    return { ok: false, error: "failed" };
+  }
+}
+
+export async function duplicateResumeVersion(
+  id: unknown,
+): Promise<
+  { ok: true; id: string } | { ok: false; error: ResumeVersionError }
+> {
+  const { userId } = await auth();
+  if (!userId) return { ok: false, error: "unauthorized" };
+  const parsed = z.uuid().safeParse(id);
+  if (!parsed.success) return { ok: false, error: "notFound" };
+  try {
+    const [source, t] = await Promise.all([
+      getResumeVersion(userId, parsed.data),
+      getTranslations("Resumes.detail"),
+    ]);
+    if (!source) return { ok: false, error: "notFound" };
+    const name = t("copyName", { name: source.name }).slice(0, 120);
+    const copy = await duplicateResumeVersionRow(userId, parsed.data, name);
+    return copy ? { ok: true, id: copy } : { ok: false, error: "notFound" };
   } catch {
     return { ok: false, error: "failed" };
   }

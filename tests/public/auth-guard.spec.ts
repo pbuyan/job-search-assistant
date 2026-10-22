@@ -1,6 +1,13 @@
 import { expect, test } from "@playwright/test";
 
-const protectedPaths = ["/dashboard", "/profile", "/jobs", "/jobs/new", "/tracker"];
+const protectedPaths = [
+  "/dashboard",
+  "/profile",
+  "/jobs",
+  "/jobs/new",
+  "/resumes",
+  "/tracker",
+];
 
 test.describe("signed-out visitors", () => {
   for (const path of protectedPaths) {
@@ -27,10 +34,20 @@ test.describe("signed-out visitors", () => {
   // auth.protect() answers with a redirect or 401/404 depending on the
   // request; either way the handler must not run.
   test("can't reach API routes", async ({ request }) => {
-    const response = await request.post("/api/profile/parse-resume", {
-      maxRedirects: 0,
-    });
-    expect(response.status()).toBeGreaterThanOrEqual(300);
-    expect(response.status()).toBeLessThan(500);
+    const responses = await Promise.all([
+      request.post("/api/profile/parse-resume", { maxRedirects: 0 }),
+      request.get("/api/profile/export?format=pdf", { maxRedirects: 0 }),
+      request.get(
+        "/api/resumes/00000000-0000-4000-8000-000000000000/export?format=pdf",
+        { maxRedirects: 0 },
+      ),
+    ]);
+    for (const response of responses) {
+      expect(response.status()).toBeGreaterThanOrEqual(300);
+      expect(response.status()).toBeLessThan(500);
+      expect(response.headers()["content-type"] ?? "").not.toContain(
+        "application/pdf",
+      );
+    }
   });
 });

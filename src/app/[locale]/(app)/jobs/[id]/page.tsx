@@ -21,6 +21,7 @@ import { listResumeVersions } from "@/db/queries/resume-versions";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { languageName } from "@/lib/language-name";
+import { cn } from "@/lib/utils";
 import { profileBullets } from "@/prompts/fit-analysis";
 
 // The analysis runs as a Server Action from this page.
@@ -311,9 +312,13 @@ export default async function JobPage({
           <div>
             <Link
               href={`/resumes/new?jobId=${job.id}`}
-              className={buttonVariants({
-                variant: versions.length > 0 ? "outline" : "default",
-              })}
+              // cn() resolves the base border-transparent against outline's
+              // border colour, as <Button> does.
+              className={cn(
+                buttonVariants({
+                  variant: versions.length > 0 ? "outline" : "default",
+                }),
+              )}
             >
               {t("resumes.tailor")}
             </Link>
