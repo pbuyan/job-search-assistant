@@ -1,5 +1,11 @@
 "use client";
-import { BriefcaseBusiness, KanbanSquare, LayoutDashboard, UserRound } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  FileText,
+  KanbanSquare,
+  LayoutDashboard,
+  UserRound,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import {
@@ -15,6 +21,7 @@ const items = [
   { key: "dashboard", href: "/dashboard", icon: LayoutDashboard },
   { key: "profile", href: "/profile", icon: UserRound },
   { key: "jobs", href: "/jobs", icon: BriefcaseBusiness },
+  { key: "resumes", href: "/resumes", icon: FileText },
   { key: "tracker", href: "/tracker", icon: KanbanSquare },
 ] as const;
 

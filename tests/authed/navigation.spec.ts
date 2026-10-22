@@ -6,6 +6,7 @@ import { gotoSignedIn, hasHorizontalScroll, openNav } from "../support";
 const pages = [
   { nav: "Profile", path: "/en/profile", heading: "Profile" },
   { nav: "Jobs", path: "/en/jobs", heading: "Jobs" },
+  { nav: "Resumes", path: "/en/resumes", heading: "Resumes" },
   { nav: "Tracker", path: "/en/tracker", heading: "Tracker" },
   { nav: "Dashboard", path: "/en/dashboard", heading: "Dashboard" },
 ];
@@ -36,6 +37,7 @@ test("app pages render in French", async ({ page }) => {
     { path: "/fr/dashboard", heading: "Tableau de bord" },
     { path: "/fr/profile", heading: "Profil" },
     { path: "/fr/jobs", heading: "Emplois" },
+    { path: "/fr/resumes", heading: "CV" },
     { path: "/fr/tracker", heading: "Suivi" },
   ];
   for (const { path, heading } of french) {
@@ -69,4 +71,16 @@ test("unknown job ids are a 404", async ({ page }) => {
     "/en/jobs/00000000-0000-4000-8000-000000000000",
   );
   expect(missing?.status()).toBe(404);
+});
+
+test("unknown resume and tailoring targets are a 404", async ({ page }) => {
+  for (const path of [
+    "/en/resumes/not-a-uuid",
+    "/en/resumes/00000000-0000-4000-8000-000000000000",
+    "/en/resumes/new",
+    "/en/resumes/new?jobId=00000000-0000-4000-8000-000000000000",
+  ]) {
+    const response = await gotoSignedIn(page, path);
+    expect(response?.status(), path).toBe(404);
+  }
 });

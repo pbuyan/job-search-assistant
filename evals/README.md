@@ -1,14 +1,15 @@
 # Prompt evals
 
-`pnpm eval` runs the real job extraction (`parse-job`) and fit analysis
-(`fit-analysis`) on every case in `cases.ts`, using live Claude calls (real
-cost; needs `.env.local`). Run it before and after any prompt change and
+`pnpm eval` runs the real job extraction (`parse-job`), fit analysis
+(`fit-analysis`) and resume tailoring (`tailor-resume`) on every case in
+`cases.ts`, using live Claude calls (real cost; needs `.env.local`). Run it before and after any prompt change and
 report both tables.
 
+- `pnpm eval --suite fit|tailor` runs one suite (default: both).
 - `pnpm eval --case <id>` runs a single case.
 - `pnpm eval --concurrency <n>` runs n cases at a time (default 3).
 
-## Checks per case
+## Checks per fit case
 
 | column     | passes when                                                                 |
 | ---------- | --------------------------------------------------------------------------- |
@@ -17,6 +18,15 @@ report both tables.
 | `evidence` | every `evidenceBulletId` exists in the profile (re-checked independently)   |
 | `1st try`  | the first answer was valid; `analyzeFit` retries once, hiding slips         |
 | `lang`     | summary and per-requirement texts are in the requested output language     |
+
+## Checks per tailoring case (`TAILOR_CASES`)
+
+| column    | passes when                                                              |
+| --------- | ------------------------------------------------------------------------ |
+| `sources` | every bullet cites a bullet id that exists in the profile                |
+| `numbers` | no bullet contains a number its source bullet doesn't                    |
+| `1st try` | the first answer was valid; `tailorResume` retries once, hiding slips    |
+| `lang`    | the bullets stay in the profile's language, whatever the posting's       |
 
 `?` in `lang` means the text was too short to detect; it doesn't fail the
 case. The process exits 1 if any case fails. Full results, including the

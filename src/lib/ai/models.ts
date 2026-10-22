@@ -6,6 +6,7 @@ export const MODEL_IDS = {
   parseResume: "claude-opus-5-5",
   parseJob: "claude-opus-5-5",
   fitAnalysis: "claude-opus-5-5",
+  tailorResume: "claude-opus-5-5",
 } as const;
 
 // ANTHROPIC_API_KEY is read from the environment. A user-scoped key (not tied
@@ -20,3 +21,4 @@ const provider = createAnthropic({
 export const parseResumeModel = () => provider(MODEL_IDS.parseResume);
 export const parseJobModel = () => provider(MODEL_IDS.parseJob);
 export const fitAnalysisModel = () => provider(MODEL_IDS.fitAnalysis);
+export const tailorResumeModel = () => provider(MODEL_IDS.tailorResume);

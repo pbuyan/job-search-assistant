@@ -11,11 +11,13 @@ import { z } from "zod";
 import { AnalyzeButton } from "@/components/jobs/analyze-button";
 import { TrackJobButton } from "@/components/tracker/track-job-button";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getApplicationForJob } from "@/db/queries/applications";
 import { getJob } from "@/db/queries/jobs";
 import { getLatestMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
+import { listResumeVersions } from "@/db/queries/resume-versions";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { languageName } from "@/lib/language-name";
@@ -39,12 +41,13 @@ export default async function JobPage({
   if (!userId) return redirect({ href: "/sign-in", locale });
   if (!z.uuid().safeParse(id).success) notFound();
 
-  const [job, match, profile, application, t, tTracker, format] =
+  const [job, match, profile, application, versions, t, tTracker, format] =
     await Promise.all([
       getJob(userId, id),
       getLatestMatch(userId, id),
       getProfile(userId),
       getApplicationForJob(userId, id),
+      listResumeVersions(userId, { jobId: id }),
       getTranslations("Jobs.detail"),
       getTranslations("Tracker"),
       getFormatter(),
@@ -275,6 +278,48 @@ export default async function JobPage({
           </CardContent>
         </Card>
       )}
+
+      {job.requirements ? (
+        <section
+          aria-labelledby="resumes-heading"
+          className="flex flex-col gap-3"
+        >
+          <h2 id="resumes-heading" className="text-start text-lg font-semibold">
+            {t("resumes.title")}
+          </h2>
+          {versions.length === 0 ? (
+            <p className="text-start text-sm text-muted-foreground">
+              {t("resumes.empty")}
+            </p>
+          ) : (
+            <ul className="flex flex-col divide-y rounded-xl border">
+              {versions.map((v) => (
+                <li key={v.id}>
+                  <Link
+                    href={`/resumes/${v.id}`}
+                    className="flex flex-wrap items-center justify-between gap-2 p-3 text-start text-sm hover:bg-muted/50"
+                  >
+                    <span className="font-medium">{v.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {format.dateTime(v.createdAt, { dateStyle: "medium" })}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          <div>
+            <Link
+              href={`/resumes/new?jobId=${job.id}`}
+              className={buttonVariants({
+                variant: versions.length > 0 ? "outline" : "default",
+              })}
+            >
+              {t("resumes.tailor")}
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       {job.requirements ? (
         <details className="rounded-xl border p-4">
