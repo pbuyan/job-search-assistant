@@ -100,7 +100,7 @@
     },
     "privacy": {
       "title": "Utilisation de votre CV",
-      "body": "Votre CV sert uniquement à vous associer à des offres et à adapter vos candidatures. Il n'est ni communiqué à d'autres utilisateurs ni vendu. Pour ce faire, son texte est traité par Claude (Anthropic)."
+      "body": "Votre CV sert uniquement à vous associer à des offres et à adapter vos candidatures. Il n'est ni communiqué à d'autres utilisateurs ni vendu. Pour ce faire, son texte est traité par Claude (Anthropic) et, pour la correspondance, par Voyage AI."
     },
     "footer": { "copyright": "© {year} {appName}" }
   },
@@ -186,6 +186,48 @@
       "pdf": "PDF",
       "docx": "Word"
     },
+    "matching": {
+      "privacy": "Pour vous proposer des emplois, le texte de votre profil enregistré est aussi envoyé à Voyage AI.",
+      "unavailable": "La correspondance avec les emplois n'est pas à jour : votre dernière modification n'a pas pu être envoyée. Votre profil, lui, est enregistré.",
+      "retry": "Relancer la correspondance",
+      "retrying": "Mise à jour…",
+      "errors": {
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "invalid": "Une erreur s'est produite. Rechargez la page.",
+        "noProfile": "Enregistrez d'abord votre profil.",
+        "rateLimited": "Le service de correspondance est occupé. Attendez une minute, puis réessayez.",
+        "failed": "La correspondance n'a pas pu être mise à jour. Réessayez."
+      }
+    },
+    "preferences": {
+      "title": "Préférences de recherche d'emploi",
+      "saveProfileFirst": "Enregistrez d'abord votre profil, puis indiquez ce que vous cherchez.",
+      "titles": "Titres de poste visés (séparés par des virgules)",
+      "titlesPlaceholder": "p. ex. Développeur back-end, Ingénieur logiciel",
+      "locations": "Lieux souhaités (séparés par des virgules)",
+      "locationsPlaceholder": "p. ex. Montréal, Télétravail au Canada",
+      "remoteLabel": "Mode de travail",
+      "remote": {
+        "onsite": "Sur place",
+        "hybrid": "Hybride",
+        "remote": "Télétravail",
+        "unknown": "Aucune préférence"
+      },
+      "minSalary": "Salaire annuel minimum",
+      "currency": "Devise",
+      "hint": "Les titres visés servent à vous proposer des emplois. Le salaire minimum permet de masquer les emplois moins bien payés dans la page Emplois.",
+      "save": "Enregistrer les préférences",
+      "saving": "Enregistrement…",
+      "status": {
+        "saved": "Préférences enregistrées.",
+        "savedUnmatched": "Préférences enregistrées, mais la correspondance n'a pas pu être mise à jour. Relancez-la à partir de l'avis ci-dessus.",
+        "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+        "invalid": "Vérifiez les valeurs : au plus 10 titres et 10 lieux, et un salaire en nombre entier.",
+        "noProfile": "Enregistrez d'abord votre profil.",
+        "rateLimited": "Le service de correspondance est occupé. Attendez une minute, puis réessayez.",
+        "failed": "Vos préférences n'ont pas pu être enregistrées. Réessayez."
+      }
+    },
     "resumeLanguage": "Langue du CV",
     "resumeLanguageHint": "La langue dans laquelle le contenu de votre CV est rédigé. Elle est distincte de la langue de l'application.",
     "languages": { "en": "Anglais", "fr": "Français" },
@@ -239,6 +281,30 @@
     "add": "Ajouter un emploi",
     "untitled": "Emploi sans titre",
     "added": "Ajouté le {date}",
+    "filters": {
+      "sort": "Trier par",
+      "sorts": {
+        "newest": "Plus récents",
+        "match": "Meilleure correspondance",
+        "fit": "Score d'adéquation"
+      },
+      "remote": "Mode de travail",
+      "any": "Tous",
+      "analyzed": "Analyse d'adéquation",
+      "analyzedYes": "Analysés",
+      "analyzedNo": "Non analysés",
+      "salary": "Salaire",
+      "salaryMin": "Au moins mon minimum",
+      "location": "Lieu",
+      "locationPlaceholder": "p. ex. Montréal",
+      "clear": "Effacer les filtres"
+    },
+    "salaryRange": "{min} à {max}",
+    "fit": "Adéquation {score}",
+    "notAnalyzed": "Non analysé",
+    "matchUnavailable": "La meilleure correspondance compare chaque emploi à votre profil, qui n'est pas encore prêt pour la correspondance.",
+    "goToProfile": "Aller à votre profil",
+    "noneFiltered": "Aucun emploi ne correspond à ces filtres.",
     "new": {
       "title": "Ajouter un emploi",
       "description": "Collez le lien de l'offre ou son texte. Nous en extrairons les exigences, puis vous pourrez voir dans quelle mesure votre profil y correspond.",

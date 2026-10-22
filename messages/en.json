@@ -100,7 +100,7 @@
     },
     "privacy": {
       "title": "How your resume is used",
-      "body": "Your resume is used only to match you with jobs and tailor your applications. It is not shared with other users or sold. To do this, its text is processed by Claude (Anthropic)."
+      "body": "Your resume is used only to match you with jobs and tailor your applications. It is not shared with other users or sold. To do this, its text is processed by Claude (Anthropic) and, for matching, by Voyage AI."
     },
     "footer": { "copyright": "© {year} {appName}" }
   },
@@ -186,6 +186,48 @@
       "pdf": "PDF",
       "docx": "Word"
     },
+    "matching": {
+      "privacy": "To match you with jobs, the text of your saved profile is also sent to Voyage AI.",
+      "unavailable": "Job matching isn't up to date: your last change couldn't be sent for matching. Your profile itself is saved.",
+      "retry": "Retry matching",
+      "retrying": "Updating…",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "invalid": "Something went wrong. Reload the page.",
+        "noProfile": "Save your profile first.",
+        "rateLimited": "The matching service is busy. Wait a minute, then try again.",
+        "failed": "Matching couldn't be updated. Try again."
+      }
+    },
+    "preferences": {
+      "title": "Job search preferences",
+      "saveProfileFirst": "Save your profile first, then set what you're looking for.",
+      "titles": "Target job titles (comma-separated)",
+      "titlesPlaceholder": "e.g. Backend developer, Software engineer",
+      "locations": "Preferred locations (comma-separated)",
+      "locationsPlaceholder": "e.g. Montreal, Remote in Canada",
+      "remoteLabel": "Work model",
+      "remote": {
+        "onsite": "On site",
+        "hybrid": "Hybrid",
+        "remote": "Remote",
+        "unknown": "No preference"
+      },
+      "minSalary": "Minimum yearly salary",
+      "currency": "Currency",
+      "hint": "Target titles are used to match jobs to you. The minimum salary lets you hide jobs that pay less on the Jobs page.",
+      "save": "Save preferences",
+      "saving": "Saving…",
+      "status": {
+        "saved": "Preferences saved.",
+        "savedUnmatched": "Preferences saved, but job matching couldn't be updated. Retry from the notice above.",
+        "unauthorized": "Your session has expired. Sign in again.",
+        "invalid": "Check the values: at most 10 titles and 10 locations, and a whole-number salary.",
+        "noProfile": "Save your profile first.",
+        "rateLimited": "The matching service is busy. Wait a minute, then try again.",
+        "failed": "Your preferences couldn't be saved. Try again."
+      }
+    },
     "resumeLanguage": "Resume language",
     "resumeLanguageHint": "The language your resume content is written in. This is separate from the app language.",
     "languages": { "en": "English", "fr": "French" },
@@ -239,6 +281,30 @@
     "add": "Add a job",
     "untitled": "Untitled job",
     "added": "Added {date}",
+    "filters": {
+      "sort": "Sort by",
+      "sorts": {
+        "newest": "Newest",
+        "match": "Best match",
+        "fit": "Fit score"
+      },
+      "remote": "Work model",
+      "any": "Any",
+      "analyzed": "Fit analysis",
+      "analyzedYes": "Analyzed",
+      "analyzedNo": "Not analyzed",
+      "salary": "Salary",
+      "salaryMin": "At or above my minimum",
+      "location": "Location",
+      "locationPlaceholder": "e.g. Montreal",
+      "clear": "Clear filters"
+    },
+    "salaryRange": "{min}–{max}",
+    "fit": "Fit {score}",
+    "notAnalyzed": "Not analyzed",
+    "matchUnavailable": "Best match compares each job with your profile, which isn't ready for matching yet.",
+    "goToProfile": "Go to your profile",
+    "noneFiltered": "No jobs match these filters.",
     "new": {
       "title": "Add a job",
       "description": "Paste a link to the posting, or paste its text. We'll extract the requirements and you can then check how well your profile fits.",

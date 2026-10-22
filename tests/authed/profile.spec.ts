@@ -40,7 +40,10 @@ test("edits, saves and reloads the master profile", async ({ page }) => {
 
   await expect(save).toBeEnabled();
   await save.click();
-  await expect(page.getByRole("status")).toHaveText("Profile saved.");
+  // The preferences form has its own status line.
+  await expect(
+    page.getByRole("status").filter({ hasText: "Profile saved." }),
+  ).toBeVisible();
   // Saved form is clean again, so Save is disabled until the next edit.
   await expect(save).toBeDisabled();
 
@@ -62,5 +65,27 @@ test("blocks saving an invalid profile", async ({ page }) => {
   }).toPass();
   await page.getByRole("button", { name: "Save profile" }).click();
   await expect(fullName).toHaveAttribute("aria-invalid", "true");
-  await expect(page.getByRole("status")).not.toHaveText("Profile saved.");
+  await expect(page.getByText("Profile saved.")).toHaveCount(0);
+});
+
+test("saves search preferences", async ({ page }) => {
+  await gotoSignedIn(page, "/en/profile");
+  const titles = page.getByLabel("Target job titles (comma-separated)");
+  await expect(async () => {
+    await titles.fill(
+      "Backend developer, Software engineer, backend developer",
+    );
+    await expect(titles).toHaveValue(/Software engineer/, { timeout: 1_000 });
+  }).toPass();
+  await page.getByLabel("Minimum yearly salary").fill("90000");
+  await page.getByRole("button", { name: "Save preferences" }).click();
+  // Saved either way; matching may lag if the embedding service is down.
+  await expect(
+    page.getByRole("status").filter({ hasText: /^Preferences saved/ }),
+  ).toBeVisible({ timeout: 45_000 });
+
+  await page.reload();
+  // Split, trimmed and de-duplicated on save.
+  await expect(titles).toHaveValue("Backend developer, Software engineer");
+  await expect(page.getByLabel("Minimum yearly salary")).toHaveValue("90000");
 });

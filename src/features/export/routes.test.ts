@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TailoredResume } from "@/db/schema";
 
 let userId: string | null = "user-1";
@@ -41,6 +41,12 @@ const call = async (id: string, format: string | null) => {
 };
 
 describe("GET /api/resumes/:id/export", () => {
+  // The route pulls in the PDF renderer, whose first import can take several
+  // seconds when the whole suite runs in parallel; pay it once, up front.
+  beforeAll(async () => {
+    await import("@/app/api/resumes/[id]/export/route");
+  }, 30_000);
+
   beforeEach(() => {
     userId = "user-1";
     getResumeVersion.mockClear();

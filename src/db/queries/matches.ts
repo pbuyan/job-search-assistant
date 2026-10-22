@@ -1,6 +1,6 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { jobMatches, jobs, type FitAnalysis } from "@/db/schema";
+import { jobMatches, jobs, profiles, type FitAnalysis } from "@/db/schema";
 
 export async function insertMatch(
   userId: string,
@@ -13,7 +13,13 @@ export async function insertMatch(
     analysisLanguage: string;
   },
 ) {
-  await db.insert(jobMatches).values({ ...match, userId });
+  // The embedding similarity at analysis time (×100), kept beside the score
+  // so the two can be compared later; null when either isn't embedded.
+  const similarity = sql`round(100 * (1 - (
+    (select ${jobs.embedding} from ${jobs} where ${jobs.id} = ${match.jobId} and ${jobs.userId} = ${userId})
+    <=> (select ${profiles.embedding} from ${profiles} where ${profiles.userId} = ${userId})
+  )))::int`;
+  await db.insert(jobMatches).values({ ...match, userId, similarity });
 }
 
 // Every analysis run is kept (history); the page shows the most recent.

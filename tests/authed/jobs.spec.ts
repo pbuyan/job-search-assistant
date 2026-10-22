@@ -57,3 +57,28 @@ test.describe("add a job form", () => {
     );
   });
 });
+
+// Read-only: works whether or not the test user has jobs, because filters
+// in the URL always show the filter bar.
+test("jobs list keeps sort and filters in the URL", async ({ page }) => {
+  await gotoSignedIn(page, "/en/jobs?sort=fit&remote=remote&analyzed=bogus");
+  await expect(page.getByRole("combobox", { name: "Sort by" })).toContainText(
+    "Fit score",
+  );
+  await expect(
+    page.getByRole("combobox", { name: "Work model" }),
+  ).toContainText("Remote");
+  // An unknown value falls back to no filter.
+  await expect(
+    page.getByRole("combobox", { name: "Fit analysis" }),
+  ).toContainText("Any");
+
+  await page.getByLabel("Location").fill("Toronto");
+  await page.getByLabel("Location").press("Enter");
+  await expect(page).toHaveURL(/location=Toronto/);
+  await expect(page).toHaveURL(/sort=fit/);
+
+  await page.getByRole("button", { name: "Clear filters" }).click();
+  await expect(page).toHaveURL(/\/en\/jobs\?sort=fit$/);
+  await expect(page.getByLabel("Location")).toHaveValue("");
+});

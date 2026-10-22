@@ -8,6 +8,8 @@ import type { ProfileSaveInput } from "./schemas";
 
 const saveProfile = vi.hoisted(() => vi.fn());
 vi.mock("@/features/profile/actions", () => ({ saveProfile }));
+const refresh = vi.fn();
+vi.mock("@/i18n/navigation", () => ({ useRouter: () => ({ refresh }) }));
 
 const saved: ProfileSaveInput = {
   language: "en",

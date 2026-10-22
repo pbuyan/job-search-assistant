@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "@/i18n/navigation";
 import { saveProfile } from "@/features/profile/actions";
 import { diffProfiles, type ProfileDiff } from "@/features/profile/diff";
 import { normalizeProfile, toFormValues } from "@/features/profile/normalize";
@@ -51,6 +52,7 @@ type Status = "idle" | "saved" | "unauthorized" | "invalid" | "failed";
 
 export function ProfileForm({ initial }: { initial: ProfileSaveInput }) {
   const t = useTranslations("Profile");
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [status, setStatus] = useState<Status>("idle");
   const [proposal, setProposal] = useState<Proposal | null>(null);
@@ -94,6 +96,8 @@ export function ProfileForm({ initial }: { initial: ProfileSaveInput }) {
       });
       setProposal(null);
       setStatus("saved");
+      // The page shows whether job matching is up to date after this save.
+      router.refresh();
     });
   });
 

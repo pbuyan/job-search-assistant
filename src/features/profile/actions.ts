@@ -3,6 +3,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { saveProfile as saveProfileRow } from "@/db/queries/profile";
 import { setUserLocale } from "@/db/queries/users";
+import { embedProfile } from "@/features/matching/embed-profile";
 import type { ProfileDataInput } from "@/prompts/schemas";
 import { normalizeProfile } from "./normalize";
 import { localeSchema, profileSaveSchema, profileShapeSchema } from "./schemas";
@@ -17,11 +18,19 @@ export async function updateLocale(input: unknown) {
 }
 
 export type SaveProfileResult =
-  | { ok: true; data: ProfileDataInput; language: string }
+  | {
+      ok: true;
+      data: ProfileDataInput;
+      language: string;
+      // Whether job matching is up to date; the save itself succeeded.
+      matched: boolean;
+    }
   | { ok: false; error: "unauthorized" | "invalid" | "failed" };
 
 // This is the user's own edit of the master profile; no AI step calls it.
-// Error results carry codes only, never profile content (privacy).
+// Error results carry codes only, never profile content (privacy). After
+// saving, the profile is re-embedded for job matching; if that fails the save
+// still stands and the profile page offers a retry.
 export async function saveProfile(input: unknown): Promise<SaveProfileResult> {
   const { userId } = await auth();
   if (!userId) return { ok: false, error: "unauthorized" };
@@ -36,10 +45,12 @@ export async function saveProfile(input: unknown): Promise<SaveProfileResult> {
   });
   if (!parsed.success) return { ok: false, error: "invalid" };
 
+  let saved: Awaited<ReturnType<typeof saveProfileRow>>;
   try {
-    const saved = await saveProfileRow(userId, parsed.data);
-    return { ok: true, ...saved };
+    saved = await saveProfileRow(userId, parsed.data);
   } catch {
     return { ok: false, error: "failed" };
   }
+  const matched = (await embedProfile(userId).catch(() => "failed")) === "ok";
+  return { ok: true, ...saved, matched };
 }
