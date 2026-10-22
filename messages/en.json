@@ -75,6 +75,10 @@
     "application": {
       "title": "Application",
       "description": "One application: its status, next step, the resume you sent, its timeline and contacts."
+    },
+    "boards": {
+      "title": "Browse a job board",
+      "description": "See a company's open postings on Greenhouse, Lever or Ashby and import the ones you want."
     }
   },
   "Auth": { "tagline": "Match jobs to your experience and track every application." },
@@ -305,9 +309,46 @@
     "matchUnavailable": "Best match compares each job with your profile, which isn't ready for matching yet.",
     "goToProfile": "Go to your profile",
     "noneFiltered": "No jobs match these filters.",
+    "browseBoards": "Browse a job board",
+    "boards": {
+      "title": "Browse a job board",
+      "description": "Paste a link to a company's job board on Greenhouse, Lever or Ashby (or to any posting on it) to see its open postings, then import the ones you want.",
+      "urlLabel": "Job board link",
+      "submit": "Show postings",
+      "privacy": "The listing is read from the board's public API. Importing a posting sends its text to Claude (Anthropic) and Voyage AI, as when you add a job.",
+      "errors": {
+        "unsupported": "That isn't a Greenhouse, Lever or Ashby job board link.",
+        "notFound": "No job board was found at that link. Check the company name in it.",
+        "failed": "The job board couldn't be loaded. Try again later."
+      },
+      "providers": {
+        "greenhouse": "Greenhouse",
+        "lever": "Lever",
+        "ashby": "Ashby"
+      },
+      "count": "{total, plural, =0 {No open postings.} one {# open posting.} other {# open postings.}}",
+      "countFiltered": "{shown} of {total, plural, one {# open posting} other {# open postings}} match your preferences.",
+      "showAll": "Show all",
+      "showMatching": "Show only matching",
+      "setPreferences": "Set target titles in your profile to narrow this list.",
+      "none": "No postings to show.",
+      "remote": {
+        "onsite": "On site",
+        "hybrid": "Hybrid",
+        "remote": "Remote"
+      },
+      "posted": "Posted {date}",
+      "imported": "Imported: open",
+      "open": "Open job",
+      "import": "Import",
+      "importing": "Importing…",
+      "importLabel": "Import {title}",
+      "truncated": "Only the first {max} postings are shown."
+    },
     "new": {
       "title": "Add a job",
       "description": "Paste a link to the posting, or paste its text. We'll extract the requirements and you can then check how well your profile fits.",
+      "browseBoards": "Hiring on Greenhouse, Lever or Ashby? <link>Browse the company's whole job board</link>.",
       "tabUrl": "Link",
       "tabText": "Paste text",
       "urlLabel": "Posting URL",
@@ -331,6 +372,7 @@
         "needsPaste": "We couldn't find the job description on that page. Paste it below; we kept the link.",
         "postingGone": "This posting is no longer available.",
         "greenhouseUnavailable": "We couldn't load this posting from Greenhouse. Paste the job description below; we kept the link.",
+        "boardUnavailable": "We couldn't load this posting from the job board. Paste the job description below; we kept the link.",
         "tooShort": "That's too short to be a job description. Paste the full posting.",
         "tooLong": "That's too long to be a single job posting.",
         "parseFailed": "The posting couldn't be processed. Try again.",

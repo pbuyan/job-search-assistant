@@ -1,15 +1,20 @@
 import { HTMLElement, parse, TextNode, type Node } from "node-html-parser";
 import { z } from "zod";
+import {
+  fetchBoardJson,
+  httpUrl,
+  toDate,
+  type BoardListing,
+  type BoardPosting,
+} from "./boards/common";
 import { fetchJobPage } from "./fetch-job-page";
 
 // Greenhouse postings are read through the public Job Board API rather than
 // by scraping the board page. Nothing here logs posting content.
 
 const API_BASE = "https://boards-api.greenhouse.io/v1/boards";
-const TIMEOUT_MS = 8_000;
 const MAX_BYTES = 2 * 1024 * 1024;
-const USER_AGENT =
-  "JobSearchAssistant/0.1 (user-initiated import of a single job posting)";
+const BOARD_BYTES = 5 * 1024 * 1024;
 
 const GREENHOUSE_HOSTS = new Set([
   "job-boards.greenhouse.io",
@@ -242,29 +247,12 @@ const greenhouseJobSchema = z.object({
   content: z.string(),
 });
 
-export type GreenhousePosting = {
-  externalId: string;
-  title: string;
-  company: string | null;
-  location: string | null;
-  url: string;
-  postedAt: Date | null;
-  language: string | null;
-  description: string;
-};
+// Greenhouse doesn't give a work model or salary; the AI extraction does.
+export type GreenhousePosting = BoardPosting;
 
 export type GreenhouseFetchResult =
   | { ok: true; posting: GreenhousePosting }
   | { ok: false; error: "notFound" | "failed" };
-
-function toDate(value: string | null | undefined): Date | null {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-const httpUrl = (value: string | null | undefined) =>
-  value && URL.canParse(value) && /^https?:\/\//i.test(value) ? value : null;
 
 export function postingFromApi(
   data: unknown,
@@ -281,6 +269,8 @@ export function postingFromApi(
     title: job.title.trim(),
     company: job.company_name?.trim() || null,
     location: job.location?.name?.trim() || null,
+    remote: null,
+    salary: null,
     url: httpUrl(job.absolute_url) ?? fallbackUrl,
     postedAt: toDate(job.first_published) ?? toDate(job.updated_at),
     language: language && /^[a-z]{2}$/.test(language) ? language : null,
@@ -294,29 +284,86 @@ export async function fetchGreenhouseJob(
 ): Promise<GreenhouseFetchResult> {
   if (!BOARD_TOKEN.test(board) || !JOB_ID.test(jobId))
     return { ok: false, error: "failed" };
-  const apiUrl = `${API_BASE}/${encodeURIComponent(board)}/jobs/${jobId}`;
+  const result = await fetchBoardJson(
+    `${API_BASE}/${encodeURIComponent(board)}/jobs/${jobId}`,
+    MAX_BYTES,
+  );
+  if (!result.ok) return result;
+  const posting = postingFromApi(
+    result.data,
+    `https://job-boards.greenhouse.io/${board}/jobs/${jobId}`,
+  );
+  return posting ? { ok: true, posting } : { ok: false, error: "failed" };
+}
+
+// job-boards.greenhouse.io/{board}, boards.greenhouse.io/embed/job_board?for=
+// {board}, or any posting URL on a Greenhouse host.
+export function parseGreenhouseBoardUrl(raw: string): string | null {
+  const posting = parseGreenhouseUrl(raw);
+  if (posting?.board) return posting.board;
+  let url: URL;
   try {
-    const res = await fetch(apiUrl, {
-      method: "GET",
-      headers: { "user-agent": USER_AGENT, accept: "application/json" },
-      redirect: "error",
-      cache: "no-store",
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-    if (res.status === 404) return { ok: false, error: "notFound" };
-    if (!res.ok) return { ok: false, error: "failed" };
-    if (Number(res.headers.get("content-length") ?? 0) > MAX_BYTES)
-      return { ok: false, error: "failed" };
-    const body = await res.text();
-    if (body.length > MAX_BYTES) return { ok: false, error: "failed" };
-    const posting = postingFromApi(
-      JSON.parse(body),
-      `https://job-boards.greenhouse.io/${board}/jobs/${jobId}`,
-    );
-    return posting ? { ok: true, posting } : { ok: false, error: "failed" };
+    url = new URL(raw.trim());
   } catch {
-    return { ok: false, error: "failed" };
+    return null;
   }
+  if (!/^https?:$/.test(url.protocol)) return null;
+  if (!GREENHOUSE_HOSTS.has(url.hostname.toLowerCase().replace(/\.$/, "")))
+    return null;
+  const segments = url.pathname.split("/").filter(Boolean);
+  if (segments.length === 1 && BOARD_TOKEN.test(segments[0]))
+    return segments[0];
+  const forParam = url.searchParams.get("for");
+  return segments.join("/") === "embed/job_board" &&
+    forParam &&
+    BOARD_TOKEN.test(forParam)
+    ? forParam
+    : null;
+}
+
+const boardListSchema = z.object({
+  jobs: z.array(
+    z.object({
+      id: z.number().int().nonnegative(),
+      title: z.string(),
+      company_name: z.string().nullish(),
+      location: z.object({ name: z.string().nullish() }).nullish(),
+      updated_at: z.string().nullish(),
+      first_published: z.string().nullish(),
+    }),
+  ),
+});
+
+// The board's open postings (titles and locations only, no descriptions).
+export async function listGreenhouseBoard(
+  board: string,
+): Promise<
+  | { ok: true; company: string | null; postings: BoardListing[] }
+  | { ok: false; error: "notFound" | "failed" }
+> {
+  if (!BOARD_TOKEN.test(board)) return { ok: false, error: "failed" };
+  const result = await fetchBoardJson(
+    `${API_BASE}/${encodeURIComponent(board)}/jobs`,
+    BOARD_BYTES,
+  );
+  if (!result.ok) return result;
+  const parsed = boardListSchema.safeParse(result.data);
+  if (!parsed.success) return { ok: false, error: "failed" };
+  const jobs = parsed.data.jobs.filter((j) => j.title.trim());
+  return {
+    ok: true,
+    company:
+      jobs.find((j) => j.company_name?.trim())?.company_name?.trim() ?? null,
+    postings: jobs.map((j) => ({
+      externalId: String(j.id),
+      title: j.title.trim(),
+      location: j.location?.name?.trim() || null,
+      remote: null,
+      // The canonical posting URL, which parseGreenhouseUrl reads back.
+      url: `https://job-boards.greenhouse.io/${board}/jobs/${j.id}`,
+      postedAt: toDate(j.first_published) ?? toDate(j.updated_at),
+    })),
+  };
 }
 
 export type GreenhouseImportError =

@@ -75,6 +75,10 @@
     "application": {
       "title": "Candidature",
       "description": "Une candidature : son statut, sa prochaine étape, le CV envoyé, son historique et ses contacts."
+    },
+    "boards": {
+      "title": "Parcourir un site d'emplois",
+      "description": "Voyez les offres d'une entreprise sur Greenhouse, Lever ou Ashby et importez celles qui vous intéressent."
     }
   },
   "Auth": { "tagline": "Associez les offres à votre expérience et suivez chaque candidature." },
@@ -305,9 +309,46 @@
     "matchUnavailable": "La meilleure correspondance compare chaque emploi à votre profil, qui n'est pas encore prêt pour la correspondance.",
     "goToProfile": "Aller à votre profil",
     "noneFiltered": "Aucun emploi ne correspond à ces filtres.",
+    "browseBoards": "Parcourir un site d'emplois",
+    "boards": {
+      "title": "Parcourir un site d'emplois",
+      "description": "Collez le lien du site d'emplois d'une entreprise sur Greenhouse, Lever ou Ashby (ou d'une de ses offres) pour voir ses offres ouvertes, puis importez celles qui vous intéressent.",
+      "urlLabel": "Lien du site d'emplois",
+      "submit": "Afficher les offres",
+      "privacy": "La liste est lue à partir de l'API publique du site. L'importation d'une offre envoie son texte à Claude (Anthropic) et à Voyage AI, comme lorsque vous ajoutez un emploi.",
+      "errors": {
+        "unsupported": "Ce lien n'est pas celui d'un site d'emplois Greenhouse, Lever ou Ashby.",
+        "notFound": "Aucun site d'emplois n'a été trouvé à ce lien. Vérifiez le nom de l'entreprise dans le lien.",
+        "failed": "Le site d'emplois n'a pas pu être chargé. Réessayez plus tard."
+      },
+      "providers": {
+        "greenhouse": "Greenhouse",
+        "lever": "Lever",
+        "ashby": "Ashby"
+      },
+      "count": "{total, plural, =0 {Aucune offre ouverte.} one {# offre ouverte.} other {# offres ouvertes.}}",
+      "countFiltered": "{shown} {total, plural, one {offre ouverte sur #} other {offres ouvertes sur #}} correspondent à vos préférences.",
+      "showAll": "Tout afficher",
+      "showMatching": "Afficher seulement les correspondances",
+      "setPreferences": "Indiquez des titres visés dans votre profil pour restreindre cette liste.",
+      "none": "Aucune offre à afficher.",
+      "remote": {
+        "onsite": "Sur place",
+        "hybrid": "Hybride",
+        "remote": "Télétravail"
+      },
+      "posted": "Publiée le {date}",
+      "imported": "Importée : ouvrir",
+      "open": "Ouvrir l'emploi",
+      "import": "Importer",
+      "importing": "Importation…",
+      "importLabel": "Importer {title}",
+      "truncated": "Seules les {max} premières offres sont affichées."
+    },
     "new": {
       "title": "Ajouter un emploi",
       "description": "Collez le lien de l'offre ou son texte. Nous en extrairons les exigences, puis vous pourrez voir dans quelle mesure votre profil y correspond.",
+      "browseBoards": "L'entreprise recrute sur Greenhouse, Lever ou Ashby? <link>Parcourez toutes ses offres</link>.",
       "tabUrl": "Lien",
       "tabText": "Coller le texte",
       "urlLabel": "URL de l'offre",
@@ -331,6 +372,7 @@
         "needsPaste": "Nous n'avons pas trouvé la description du poste sur cette page. Collez-la ci-dessous; nous avons conservé le lien.",
         "postingGone": "Cette offre n'est plus disponible.",
         "greenhouseUnavailable": "Nous n'avons pas pu charger cette offre depuis Greenhouse. Collez la description du poste ci-dessous; nous avons conservé le lien.",
+        "boardUnavailable": "Cette offre n'a pas pu être chargée depuis le site d'emplois. Collez la description de l'offre ci-dessous; nous avons gardé le lien.",
         "tooShort": "C'est trop court pour une description de poste. Collez l'offre complète.",
         "tooLong": "C'est trop long pour une seule offre d'emploi.",
         "parseFailed": "L'offre n'a pas pu être traitée. Réessayez.",

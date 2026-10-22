@@ -17,6 +17,7 @@ import { parseJobListParams } from "@/features/matching/schemas";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { pageMetadata } from "@/lib/metadata";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -85,10 +86,18 @@ export default async function JobsPage({
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-start text-2xl font-semibold">{t("title")}</h1>
-        <Link href="/jobs/new" className={buttonVariants()}>
-          <Plus />
-          {t("add")}
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/jobs/boards"
+            className={cn(buttonVariants({ variant: "outline" }))}
+          >
+            {t("browseBoards")}
+          </Link>
+          <Link href="/jobs/new" className={buttonVariants()}>
+            <Plus />
+            {t("add")}
+          </Link>
+        </div>
       </div>
       {jobs.length > 0 || filtered ? (
         <JobFilters params={query} hasMinSalary={Boolean(minSalary)} />
