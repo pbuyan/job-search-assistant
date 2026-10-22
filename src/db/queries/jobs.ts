@@ -159,3 +159,26 @@ export async function deleteJob(userId: string, jobId: string): Promise<boolean>
     return rows.length > 0;
   });
 }
+
+// Which of these board postings the user has already imported: external id →
+// job id. Uses the (user, source, external id) unique index.
+export async function importedJobIds(
+  userId: string,
+  source: "greenhouse" | "lever" | "ashby",
+  externalIds: string[],
+): Promise<Map<string, string>> {
+  if (externalIds.length === 0) return new Map();
+  const rows = await db
+    .select({ id: jobs.id, externalId: jobs.externalId })
+    .from(jobs)
+    .where(
+      and(
+        eq(jobs.userId, userId),
+        eq(jobs.source, source),
+        inArray(jobs.externalId, externalIds),
+      ),
+    );
+  return new Map(
+    rows.flatMap((r) => (r.externalId ? [[r.externalId, r.id] as const] : [])),
+  );
+}

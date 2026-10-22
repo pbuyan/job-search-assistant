@@ -9,6 +9,8 @@ import { insertMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
 import { embedDocument, isRateLimited } from "@/lib/ai/embeddings";
 import { analyzeFit } from "./analyze-fit";
+import { importerFor } from "./boards";
+import type { BoardImportError, BoardPosting } from "./boards/common";
 import {
   MAX_POSTING_CHARS,
   postingFromHtml,
@@ -19,7 +21,6 @@ import {
   importGreenhouseJob,
   parseGreenhouseUrl,
   type GreenhouseImportError,
-  type GreenhousePosting,
 } from "./greenhouse";
 import { parseJob } from "./parse-job";
 
@@ -35,6 +36,7 @@ export type CreateJobError =
   | "invalid"
   | FetchError
   | GreenhouseImportError
+  | BoardImportError
   | "needsPaste"
   | "tooShort"
   | "tooLong"
@@ -57,34 +59,41 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
   const { url, text } = parsedInput.data;
 
   let posting: string;
-  let source: "url" | "manual" | "greenhouse";
+  let source: "url" | "manual" | "greenhouse" | "lever" | "ashby";
   let storedUrl: string | null = null;
-  let greenhouse: GreenhousePosting | null = null;
+  let board: BoardPosting | null = null;
   const greenhouseTarget = text?.trim() ? null : parseGreenhouseUrl(url!);
+  const boardImporter = text?.trim() ? null : importerFor(url!);
   if (text?.trim()) {
     const pasted = postingFromPaste(text);
     if (!pasted.ok) return { ok: false, error: pasted.error };
     posting = pasted.text;
     source = "manual";
     storedUrl = url && URL.canParse(url) && /^https?:/i.test(url) ? url : null;
-  } else if (greenhouseTarget) {
-    // Greenhouse URLs never go through the page fetcher's site checks.
-    const imported = await importGreenhouseJob(greenhouseTarget);
+  } else if (greenhouseTarget || boardImporter) {
+    // Board URLs go to the board's public API, never through the page
+    // fetcher's site checks.
+    const imported = greenhouseTarget
+      ? await importGreenhouseJob(greenhouseTarget)
+      : await boardImporter!.run();
     if (!imported.ok) return { ok: false, error: imported.error };
-    greenhouse = imported.posting;
-    if (greenhouse.description.length > MAX_POSTING_CHARS)
-      return { ok: false, error: "greenhouseUnavailable" };
+    board = imported.posting;
+    if (board.description.length > MAX_POSTING_CHARS)
+      return {
+        ok: false,
+        error: greenhouseTarget ? "greenhouseUnavailable" : "boardUnavailable",
+      };
     posting = [
-      ["Title", greenhouse.title],
-      ["Company", greenhouse.company],
-      ["Location", greenhouse.location],
+      ["Title", board.title],
+      ["Company", board.company],
+      ["Location", board.location],
     ]
       .filter(([, value]) => value)
       .map(([label, value]) => `${label}: ${value}`)
-      .concat("", greenhouse.description)
+      .concat("", board.description)
       .join("\n");
-    source = "greenhouse";
-    storedUrl = greenhouse.url;
+    source = greenhouseTarget ? "greenhouse" : boardImporter!.source;
+    storedUrl = board.url;
   } else {
     const page = await fetchJobPage(url!);
     if (!page.ok) return { ok: false, error: page.error };
@@ -119,25 +128,26 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
   }
 
   // Board API fields are authoritative; the model fills in what they lack.
+  const salary = board?.salary;
   try {
     const jobId = await upsertJob(userId, {
       source,
-      externalId: greenhouse?.externalId ?? null,
+      externalId: board?.externalId ?? null,
       url: storedUrl,
-      company: greenhouse?.company || job.company,
-      title: greenhouse?.title || job.title,
-      location: greenhouse?.location || job.location || null,
-      remote: job.remote,
-      salaryMin: job.salaryMin ?? null,
-      salaryMax: job.salaryMax ?? null,
-      salaryCurrency: job.salaryCurrency ?? null,
-      descriptionRaw: greenhouse?.description ?? posting,
+      company: board?.company || job.company,
+      title: board?.title || job.title,
+      location: board?.location || job.location || null,
+      remote: board?.remote ?? job.remote,
+      salaryMin: salary ? salary.min : (job.salaryMin ?? null),
+      salaryMax: salary ? salary.max : (job.salaryMax ?? null),
+      salaryCurrency: salary ? salary.currency : (job.salaryCurrency ?? null),
+      descriptionRaw: board?.description ?? posting,
       requirements,
       requirementsModel: parsed.model,
       requirementsPromptVersion: parsed.promptVersion,
       embedding,
-      postedAt: greenhouse?.postedAt ?? null,
-      language: greenhouse?.language ?? language,
+      postedAt: board?.postedAt ?? null,
+      language: board?.language ?? language,
     });
     return { ok: true, jobId };
   } catch {

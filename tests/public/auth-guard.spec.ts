@@ -5,6 +5,7 @@ const protectedPaths = [
   "/profile",
   "/jobs",
   "/jobs/new",
+  "/jobs/boards",
   "/resumes",
   "/tracker",
 ];

@@ -82,3 +82,20 @@ test("jobs list keeps sort and filters in the URL", async ({ page }) => {
   await expect(page).toHaveURL(/\/en\/jobs\?sort=fit$/);
   await expect(page.getByLabel("Location")).toHaveValue("");
 });
+
+// No network: the link is rejected before any board API is called.
+test("job board page rejects links that aren't Greenhouse, Lever or Ashby", async ({
+  page,
+}) => {
+  await gotoSignedIn(page, "/en/jobs");
+  await page.getByRole("link", { name: "Browse a job board" }).click();
+  await expect(page).toHaveURL(/\/en\/jobs\/boards$/);
+  await page
+    .getByLabel("Job board link")
+    .fill("https://www.linkedin.com/jobs/view/1");
+  await page.getByRole("button", { name: "Show postings" }).click();
+  await expect(page).toHaveURL(/url=https/);
+  await expect(page.getByRole("main").getByRole("alert")).toHaveText(
+    "That isn't a Greenhouse, Lever or Ashby job board link.",
+  );
+});
