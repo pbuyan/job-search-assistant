@@ -253,6 +253,7 @@
         "parseFailed": "The posting couldn't be processed. Try again.",
         "noRequirements": "No requirements were found in that posting. Check that you pasted the full description.",
         "embedFailed": "The job couldn't be indexed. Try again.",
+        "embedRateLimited": "The indexing service is busy. Wait a minute, then try again.",
         "failed": "The job couldn't be saved. Try again."
       }
     },

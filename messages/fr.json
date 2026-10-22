@@ -253,6 +253,7 @@
         "parseFailed": "L'offre n'a pas pu être traitée. Réessayez.",
         "noRequirements": "Aucune exigence n'a été trouvée dans cette offre. Vérifiez que vous avez collé la description complète.",
         "embedFailed": "L'emploi n'a pas pu être indexé. Réessayez.",
+        "embedRateLimited": "Le service d'indexation est occupé. Attendez une minute, puis réessayez.",
         "failed": "L'emploi n'a pas pu être enregistré. Réessayez."
       }
     },

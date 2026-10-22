@@ -7,7 +7,7 @@ import { z } from "zod";
 import { getJob, upsertJob } from "@/db/queries/jobs";
 import { insertMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
-import { embedDocument } from "@/lib/ai/embeddings";
+import { embedDocument, isRateLimited } from "@/lib/ai/embeddings";
 import { analyzeFit } from "./analyze-fit";
 import {
   MAX_POSTING_CHARS,
@@ -41,6 +41,7 @@ export type CreateJobError =
   | "parseFailed"
   | "noRequirements"
   | "embedFailed"
+  | "embedRateLimited"
   | "failed";
 
 export type CreateJobResult =
@@ -111,7 +112,10 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
       name: err instanceof Error ? err.name : typeof err,
       status: err instanceof VoyageAIError ? err.statusCode : undefined,
     });
-    return { ok: false, error: "embedFailed" };
+    return {
+      ok: false,
+      error: isRateLimited(err) ? "embedRateLimited" : "embedFailed",
+    };
   }
 
   // Board API fields are authoritative; the model fills in what they lack.
