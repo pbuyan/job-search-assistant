@@ -57,6 +57,11 @@ export function ApplicationCard({
             {t("notAnalyzed")}
           </Badge>
         )}
+        {card.closed ? (
+          <Badge variant="outline" className="text-muted-foreground">
+            {t("closed")}
+          </Badge>
+        ) : null}
         {due ? (
           <Badge variant={due === "overdue" ? "destructive" : "outline"}>
             {due === "overdue" ? t("overdue") : t("dueToday")}

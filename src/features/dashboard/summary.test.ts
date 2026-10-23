@@ -12,6 +12,7 @@ const card = (id: string, nextStepDue: string | null): BoardCard => ({
   jobId: `job-${id}`,
   company: "Acme",
   title: `Role ${id}`,
+  closed: false,
   score: null,
   nextStep: nextStepDue ? "Follow up" : null,
   nextStepDue,

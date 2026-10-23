@@ -67,6 +67,7 @@ export async function getBoard(userId: string): Promise<Board> {
       jobId: applications.jobId,
       company: jobs.company,
       title: jobs.title,
+      closedAt: jobs.closedAt,
       nextStep: applications.nextStep,
       nextStepDue: applications.nextStepDue,
     })
@@ -100,8 +101,12 @@ export async function getBoard(userId: string): Promise<Board> {
   }
 
   const board = emptyBoard();
-  for (const { status, ...card } of rows) {
-    board[status].push({ ...card, score: scores.get(card.jobId) ?? null });
+  for (const { status, closedAt, ...card } of rows) {
+    board[status].push({
+      ...card,
+      closed: closedAt !== null,
+      score: scores.get(card.jobId) ?? null,
+    });
   }
   return board;
 }

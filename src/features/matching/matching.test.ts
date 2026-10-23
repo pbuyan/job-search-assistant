@@ -134,6 +134,7 @@ describe("schemas", () => {
         location: "  Montréal ",
         analyzed: "yes",
         salary: "min",
+        posting: "closed",
       }),
     ).toEqual({
       sort: "match",
@@ -141,6 +142,7 @@ describe("schemas", () => {
       location: "Montréal",
       analyzed: "yes",
       salary: "min",
+      posting: "closed",
     });
     expect(
       parseJobListParams({
@@ -149,6 +151,7 @@ describe("schemas", () => {
         location: "x".repeat(101),
         analyzed: "maybe",
         salary: "max",
+        posting: "gone",
       }),
     ).toEqual({ sort: "newest" });
   });

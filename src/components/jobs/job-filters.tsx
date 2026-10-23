@@ -73,6 +73,16 @@ export function JobFilters({
         { value: "no", label: t("analyzedNo") },
       ],
     },
+    {
+      key: "posting",
+      label: t("posting"),
+      value: params.posting ?? ANY,
+      items: [
+        { value: ANY, label: t("any") },
+        { value: "open", label: t("postingOpen") },
+        { value: "closed", label: t("postingClosed") },
+      ],
+    },
     ...(hasMinSalary
       ? [
           {
@@ -88,7 +98,11 @@ export function JobFilters({
       : []),
   ];
   const filtered = Boolean(
-    params.remote || params.location || params.analyzed || params.salary,
+    params.remote ||
+    params.location ||
+    params.analyzed ||
+    params.salary ||
+    params.posting,
   );
 
   return (

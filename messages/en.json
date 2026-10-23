@@ -328,6 +328,9 @@
       "analyzedNo": "Not analyzed",
       "salary": "Salary",
       "salaryMin": "At or above my minimum",
+      "posting": "Posting",
+      "postingOpen": "Still open",
+      "postingClosed": "Closed",
       "location": "Location",
       "locationPlaceholder": "e.g. Montreal",
       "clear": "Clear filters"
@@ -417,6 +420,32 @@
       "remote": { "onsite": "On site", "hybrid": "Hybrid", "remote": "Remote" },
       "postingLanguage": "Posting in {language}",
       "viewPosting": "View posting",
+      "posting": {
+        "closed": "Posting closed",
+        "closedSince": "Found closed on the job board on {date}.",
+        "checkedAt": "Last checked {date}.",
+        "neverChecked": "Not checked since it was imported.",
+        "check": "Check if still open",
+        "checking": "Checking…",
+        "outcomes": {
+          "open": "Still open. The posting hasn't changed.",
+          "updated": "Still open. The posting has changed, so its requirements were updated. Run the fit analysis again to see how you fit now.",
+          "closed": "This posting is no longer on the job board. It's now marked as closed."
+        },
+        "errors": {
+          "unauthorized": "Your session has expired. Sign in again.",
+          "notFound": "This job no longer exists.",
+          "unsupported": "This posting's link can't be checked automatically.",
+          "unavailable": "The job board couldn't be reached, so nothing changed. Try again later.",
+          "quotaExceeded": "The posting is still open and has changed, but you've reached today's limit for reading postings. It resets at midnight UTC.",
+          "tooLong": "The posting is still open, but its new text is too long to process.",
+          "parseFailed": "The posting is still open, but its new text couldn't be processed. Try again.",
+          "noRequirements": "The posting is still open, but no requirements were found in its new text.",
+          "embedFailed": "The posting is still open, but its new text couldn't be indexed. Try again.",
+          "embedRateLimited": "The indexing service is busy. Wait a minute, then try again.",
+          "failed": "The posting couldn't be checked. Try again."
+        }
+      },
       "fit": "Fit with your profile",
       "scoreExplained": "The score is calculated from the requirements below: required ones count three times as much as preferred ones, and a minor gap counts as half met.",
       "otherLanguage": "This analysis was written in {language}. Re-run it to get it in the current language.",
@@ -632,7 +661,8 @@
       "nextStep": "Next step",
       "due": "due {date}",
       "overdue": "Overdue",
-      "dueToday": "Due today"
+      "dueToday": "Due today",
+      "closed": "Posting closed"
     },
     "a11y": {
       "roleDescription": "draggable application",

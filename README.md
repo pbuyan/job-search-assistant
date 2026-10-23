@@ -14,7 +14,9 @@ either language, independently of the interface.
   file is kept privately, and only after you save.
 - **Jobs**: paste a posting's text or URL, or browse a company's public
   Greenhouse, Lever or Ashby board. Postings are parsed into requirements and
-  ranked by similarity to your profile (Voyage embeddings).
+  ranked by similarity to your profile (Voyage embeddings). Imported board
+  postings are checked daily and marked closed once they're gone; checking
+  one by hand also picks up changes to its text.
 - **Fit analysis**: a score with its reasoning: matched requirements with the
   profile bullets that prove them, gaps, and keywords to emphasize.
 - **Tailoring**: Claude proposes a resume for one job by reordering, trimming
@@ -150,7 +152,10 @@ test, pull requests included, so don't point it at a database you care about.
    `https://<your-domain>/api/webhooks/clerk` for the `user.deleted` event, and
    set its signing secret as `CLERK_WEBHOOK_SIGNING_SECRET`. A user deleted in
    Clerk then has their data erased too.
-5. Use a Clerk production instance and its keys for the production domain.
+5. Set `CRON_SECRET` to a long random string. Vercel Cron then calls
+   `/api/cron/refresh-jobs` daily (`vercel.json`) to mark imported board
+   postings that have closed. It makes no AI calls.
+6. Use a Clerk production instance and its keys for the production domain.
 
 ## Privacy
 

@@ -26,6 +26,7 @@ const card = (id: string, extra: Partial<BoardCard> = {}): BoardCard => ({
   company: "Acme",
   title: `Job ${id}`,
   score: null,
+  closed: false,
   nextStep: null,
   nextStepDue: null,
   ...extra,

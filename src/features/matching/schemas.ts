@@ -48,6 +48,7 @@ export const jobListParamsSchema = z.object({
     .transform((v) => v || undefined),
   analyzed: z.enum(["yes", "no"]).optional().catch(undefined),
   salary: z.literal("min").optional().catch(undefined),
+  posting: z.enum(["open", "closed"]).optional().catch(undefined),
 });
 export type JobListParams = z.infer<typeof jobListParamsSchema>;
 
@@ -63,5 +64,6 @@ export function parseJobListParams(
     location: first(raw.location),
     analyzed: first(raw.analyzed),
     salary: first(raw.salary),
+    posting: first(raw.posting),
   });
 }

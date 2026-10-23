@@ -43,6 +43,13 @@
       "when": 1792716737971,
       "tag": "0005_shallow_mother_askani",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792726412642,
+      "tag": "0006_white_white_tiger",
+      "breakpoints": true
     }
   ]
 }
