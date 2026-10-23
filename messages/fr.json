@@ -10,7 +10,7 @@
     "themeDark": "Sombre",
     "loading": "Chargement…"
   },
-  "Nav": { "dashboard": "Tableau de bord", "profile": "Profil", "jobs": "Emplois", "tracker": "Suivi", "resumes": "CV", "settings": "Paramètres" },
+  "Nav": { "dashboard": "Tableau de bord", "profile": "Profil", "jobs": "Emplois", "tracker": "Suivi", "resumes": "CV", "settings": "Paramètres", "overdueCount": "{count, plural, one {# prochaine étape en retard} other {# prochaines étapes en retard}}" },
   "Sidebar": {
     "title": "Barre latérale",
     "mobileDescription": "Affiche la barre latérale mobile.",
@@ -139,6 +139,8 @@
       "noApplications": "Aucune candidature pour l'instant.",
       "nextSteps": "Prochaines étapes cette semaine",
       "noNextSteps": "Rien n'est prévu dans les 7 prochains jours.",
+      "overdue": "En retard",
+      "wasDue": "Échéance dépassée : {date}",
       "due": "Échéance : {date}",
       "recentScores": "Scores d'adéquation récents",
       "noScores": "Aucun emploi analysé pour l'instant.",
@@ -628,7 +630,9 @@
       "fit": "Adéquation {score}",
       "notAnalyzed": "Non analysé",
       "nextStep": "Prochaine étape",
-      "due": "échéance le {date}"
+      "due": "échéance le {date}",
+      "overdue": "En retard",
+      "dueToday": "Échéance aujourd'hui"
     },
     "a11y": {
       "roleDescription": "candidature déplaçable",
@@ -666,6 +670,24 @@
       "nextStepDue": "Échéance de la prochaine étape",
       "notes": "Notes",
       "coverLetter": "Lettre de présentation",
+      "coverDraft": {
+        "button": "Rédiger avec l'IA",
+        "drafting": "Rédaction…",
+        "hint": "Rédigée uniquement à partir de votre profil, dans la langue de votre CV. Relisez-la avant de l'envoyer.",
+        "title": "Brouillon de l'IA",
+        "use": "Utiliser ce brouillon",
+        "discard": "Ignorer",
+        "replaceNote": "L'utiliser remplace le texte du champ de la lettre. Rien n'est enregistré tant que vous n'avez pas cliqué sur Enregistrer les détails.",
+        "errors": {
+          "unauthorized": "Votre session a expiré. Connectez-vous de nouveau.",
+          "notFound": "Cette candidature ou son emploi n'existe plus. Rechargez la page.",
+          "noProfile": "Ajoutez d'abord de l'expérience à votre profil; la lettre est rédigée à partir de celui-ci.",
+          "noRequirements": "Aucune exigence n'a été extraite pour cet emploi.",
+          "parseFailed": "Le brouillon n'a pas pu être généré. Réessayez.",
+          "invalidCoverLetter": "Le brouillon affirmait quelque chose d'absent de votre profil; il a donc été rejeté. Réessayez.",
+          "quotaExceeded": "Vous avez atteint la limite quotidienne pour cette action. Elle sera réinitialisée à minuit (UTC)."
+        }
+      },
       "save": "Enregistrer les détails",
       "saving": "Enregistrement…",
       "saved": "Détails enregistrés.",

@@ -163,6 +163,20 @@ describe("application actions", () => {
     });
   });
 
+  it("records the model and prompt version only for a letter from an AI draft", async () => {
+    const { saveApplicationDetails } = await import("./actions");
+    const details = { id: ID, coverLetter: "Dear team" };
+    await saveApplicationDetails({ ...details, coverLetterFromDraft: true });
+    expect(updateApplication).toHaveBeenLastCalledWith(
+      "user-1",
+      ID,
+      expect.objectContaining({ coverLetter: "Dear team" }),
+      { model: "claude-opus-5-5", promptVersion: "cover-letter@1" },
+    );
+    await saveApplicationDetails(details);
+    expect(updateApplication.mock.lastCall).toHaveLength(3);
+  });
+
   it("reports a database failure as a code", async () => {
     const { stopTracking } = await import("./actions");
     deleteApplication.mockRejectedValueOnce(new Error("connection reset"));

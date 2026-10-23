@@ -11,6 +11,7 @@ export const DAILY_LIMITS: Record<AiFeature, number> = {
   tailorResume: 20,
   translateResume: 20,
   embedProfile: 100,
+  coverLetter: 20,
 };
 
 // AI_DAILY_LIMIT_MULTIPLIER scales every cap (e.g. 10 in dev or e2e, 0.1 to

@@ -26,6 +26,11 @@ import { useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import {
+  dueState,
+  isOpenStatus,
+  type DueState,
+} from "@/features/dashboard/summary";
 import { moveApplication } from "@/features/tracker/actions";
 import {
   APPLICATION_STATUSES,
@@ -38,7 +43,15 @@ import {
 } from "@/features/tracker/board";
 import { ApplicationCard } from "./application-card";
 
-export function KanbanBoard({ initial }: { initial: Board }) {
+// `today` (YYYY-MM-DD, UTC) comes from the server so the overdue badges
+// render the same on both sides.
+export function KanbanBoard({
+  initial,
+  today,
+}: {
+  initial: Board;
+  today: string;
+}) {
   const t = useTranslations("Tracker");
   const dndId = useId();
   const [board, setBoard] = useState(initial);
@@ -172,7 +185,12 @@ export function KanbanBoard({ initial }: { initial: Board }) {
             inside this scroller instead of widening the page. */}
         <div className="relative flex snap-x gap-3 overflow-x-auto pb-4">
           {APPLICATION_STATUSES.map((status) => (
-            <Column key={status} status={status} cards={board[status]} />
+            <Column
+              key={status}
+              status={status}
+              cards={board[status]}
+              today={today}
+            />
           ))}
         </div>
         <DragOverlay>
@@ -186,10 +204,13 @@ export function KanbanBoard({ initial }: { initial: Board }) {
 function Column({
   status,
   cards,
+  today,
 }: {
   status: ApplicationStatus;
   cards: BoardCard[];
+  today: string;
 }) {
+  const open = isOpenStatus(status);
   const t = useTranslations("Tracker");
   const { setNodeRef, isOver } = useDroppable({ id: columnId(status) });
   const headingId = `tracker-column-${status}`;
@@ -224,7 +245,11 @@ function Column({
           )}
         >
           {cards.map((card) => (
-            <SortableCard key={card.id} card={card} />
+            <SortableCard
+              key={card.id}
+              card={card}
+              due={open ? dueState(card.nextStepDue, today) : null}
+            />
           ))}
         </ul>
       </SortableContext>
@@ -232,7 +257,7 @@ function Column({
   );
 }
 
-function SortableCard({ card }: { card: BoardCard }) {
+function SortableCard({ card, due }: { card: BoardCard; due: DueState }) {
   const t = useTranslations("Tracker.a11y");
   const {
     attributes,
@@ -259,7 +284,7 @@ function SortableCard({ card }: { card: BoardCard }) {
         {...attributes}
         {...listeners}
       >
-        <ApplicationCard card={card} />
+        <ApplicationCard card={card} due={due} />
       </div>
     </li>
   );

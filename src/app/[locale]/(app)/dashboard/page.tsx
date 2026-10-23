@@ -9,7 +9,11 @@ import { getBoard } from "@/db/queries/applications";
 import { listJobs } from "@/db/queries/jobs";
 import { listRecentMatches } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
-import { statusCounts, upcomingSteps } from "@/features/dashboard/summary";
+import {
+  overdueSteps,
+  statusCounts,
+  upcomingSteps,
+} from "@/features/dashboard/summary";
 import { redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { pageMetadata } from "@/lib/metadata";
@@ -58,6 +62,7 @@ export default async function DashboardPage({
       {hasData ? (
         <SummaryCards
           counts={counts}
+          overdue={overdueSteps(board, new Date())}
           upcoming={upcomingSteps(board, new Date())}
           scores={scores}
         />

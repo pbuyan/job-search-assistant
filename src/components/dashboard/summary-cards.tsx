@@ -1,14 +1,10 @@
 import { getFormatter, getTranslations } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { StatusCount, UpcomingStep } from "@/features/dashboard/summary";
 import { dueDate } from "@/features/tracker/board";
 import { Link } from "@/i18n/navigation";
+import { cn } from "@/lib/utils";
 
 export type RecentScore = {
   jobId: string;
@@ -22,10 +18,12 @@ const rowLink =
 
 export async function SummaryCards({
   counts,
+  overdue,
   upcoming,
   scores,
 }: {
   counts: StatusCount[];
+  overdue: UpcomingStep[];
   upcoming: UpcomingStep[];
   scores: RecentScore[];
 }) {
@@ -36,6 +34,32 @@ export async function SummaryCards({
   ]);
   const jobLabel = (j: { title: string; company: string }) =>
     [j.title || t("untitled"), j.company].filter(Boolean).join(" · ");
+  const day = (value: string) =>
+    format.dateTime(dueDate(value), { dateStyle: "medium", timeZone: "UTC" });
+  const stepRow = (step: UpcomingStep, when: string, late = false) => (
+    <li key={step.applicationId}>
+      <Link href={`/tracker/${step.applicationId}`} className={rowLink}>
+        <span className="flex min-w-0 flex-col">
+          <span className="font-medium wrap-break-word">
+            {step.nextStep || jobLabel(step)}
+          </span>
+          {step.nextStep ? (
+            <span className="text-sm wrap-break-word text-muted-foreground">
+              {jobLabel(step)}
+            </span>
+          ) : null}
+        </span>
+        <span
+          className={cn(
+            "text-sm",
+            late ? "text-destructive" : "text-muted-foreground",
+          )}
+        >
+          {when}
+        </span>
+      </Link>
+    </li>
+  );
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -83,37 +107,38 @@ export async function SummaryCards({
             <h2>{t("nextSteps")}</h2>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex flex-col gap-3">
+          {overdue.length > 0 ? (
+            <section
+              aria-labelledby="overdue-heading"
+              className="flex flex-col gap-1"
+            >
+              <h3
+                id="overdue-heading"
+                className="px-2 text-start text-sm font-semibold text-destructive"
+              >
+                {t("overdue")}
+              </h3>
+              <ul className="flex flex-col gap-1">
+                {overdue.map((step) =>
+                  stepRow(
+                    step,
+                    t("wasDue", { date: day(step.nextStepDue) }),
+                    true,
+                  ),
+                )}
+              </ul>
+            </section>
+          ) : null}
           {upcoming.length === 0 ? (
             <p className="text-start text-sm text-muted-foreground">
               {t("noNextSteps")}
             </p>
           ) : (
             <ul className="flex flex-col gap-1">
-              {upcoming.map((step) => (
-                <li key={step.applicationId}>
-                  <Link href={`/tracker/${step.applicationId}`} className={rowLink}>
-                    <span className="flex min-w-0 flex-col">
-                      <span className="font-medium wrap-break-word">
-                        {step.nextStep || jobLabel(step)}
-                      </span>
-                      {step.nextStep ? (
-                        <span className="text-sm text-muted-foreground wrap-break-word">
-                          {jobLabel(step)}
-                        </span>
-                      ) : null}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {t("due", {
-                        date: format.dateTime(dueDate(step.nextStepDue), {
-                          dateStyle: "medium",
-                          timeZone: "UTC",
-                        }),
-                      })}
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {upcoming.map((step) =>
+                stepRow(step, t("due", { date: day(step.nextStepDue) })),
+              )}
             </ul>
           )}
         </CardContent>
@@ -135,7 +160,9 @@ export async function SummaryCards({
               {scores.map((m) => (
                 <li key={m.jobId}>
                   <Link href={`/jobs/${m.jobId}`} className={rowLink}>
-                    <span className="min-w-0 wrap-break-word">{jobLabel(m)}</span>
+                    <span className="min-w-0 wrap-break-word">
+                      {jobLabel(m)}
+                    </span>
                     <Badge variant="outline" className="tabular-nums">
                       {t("score", { score: m.score })}
                     </Badge>

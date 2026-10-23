@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { CoverLetterDraft } from "@/components/tracker/cover-letter-draft";
 import {
   addApplicationContact,
   addApplicationEvent,
@@ -160,6 +161,9 @@ export function DetailsForm({
   const t = useTranslations("Tracker.application");
   const [values, setValues] = useState(initial);
   const [saved, setSaved] = useState(false);
+  // The cover letter in the field started from an AI draft since the last
+  // save; the server then records the model and prompt version with it.
+  const [fromDraft, setFromDraft] = useState(false);
   const { pending, error, run } = useAction();
   const set = (key: keyof Details) => (value: string) => {
     setSaved(false);
@@ -173,8 +177,16 @@ export function DetailsForm({
   function submit(event: React.FormEvent) {
     event.preventDefault();
     run(
-      () => saveApplicationDetails({ id: applicationId, ...values }),
-      () => setSaved(true),
+      () =>
+        saveApplicationDetails({
+          id: applicationId,
+          ...values,
+          coverLetterFromDraft: fromDraft,
+        }),
+      () => {
+        setSaved(true);
+        setFromDraft(false);
+      },
     );
   }
 
@@ -242,6 +254,13 @@ export function DetailsForm({
           onChange={(e) => set("coverLetter")(e.target.value)}
         />
       </Field>
+      <CoverLetterDraft
+        applicationId={applicationId}
+        onUse={(text) => {
+          set("coverLetter")(text);
+          setFromDraft(true);
+        }}
+      />
       <ErrorText error={error} />
       <div className="flex flex-wrap items-center gap-3">
         <Button type="submit" disabled={pending}>

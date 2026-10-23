@@ -13,6 +13,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
@@ -27,7 +28,8 @@ const items = [
   { key: "settings", href: "/settings", icon: Settings },
 ] as const;
 
-export function SidebarNav() {
+// `overdue`: open applications whose next step is past due, shown on Tracker.
+export function SidebarNav({ overdue = 0 }: { overdue?: number }) {
   const t = useTranslations("Nav");
   const pathname = usePathname();
   // On mobile the sidebar is a modal sheet; close it once a destination is chosen.
@@ -42,11 +44,26 @@ export function SidebarNav() {
               <SidebarMenuButton
                 isActive={pathname === href || pathname.startsWith(`${href}/`)}
                 tooltip={t(key)}
-                render={<Link href={href} onClick={() => setOpenMobile(false)} />}
+                render={
+                  <Link href={href} onClick={() => setOpenMobile(false)} />
+                }
               >
                 <Icon />
                 <span>{t(key)}</span>
+                {key === "tracker" && overdue > 0 ? (
+                  <span className="sr-only">
+                    {t("overdueCount", { count: overdue })}
+                  </span>
+                ) : null}
               </SidebarMenuButton>
+              {key === "tracker" && overdue > 0 ? (
+                <SidebarMenuBadge
+                  aria-hidden
+                  className="end-1 right-auto bg-destructive/10 text-destructive"
+                >
+                  {overdue}
+                </SidebarMenuBadge>
+              ) : null}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

@@ -3,6 +3,7 @@ import { CalendarClock } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import type { DueState } from "@/features/dashboard/summary";
 import { dueDate, type BoardCard } from "@/features/tracker/board";
 import { Link } from "@/i18n/navigation";
 
@@ -10,10 +11,13 @@ import { Link } from "@/i18n/navigation";
 // never shifts by a day in the viewer's zone.
 export function ApplicationCard({
   card,
+  due = null,
   overlay = false,
   className,
 }: {
   card: BoardCard;
+  // Overdue or due today; null for later dates and closed applications.
+  due?: DueState;
   overlay?: boolean;
   className?: string;
 }) {
@@ -28,7 +32,7 @@ export function ApplicationCard({
         className,
       )}
     >
-      <p className="text-xs text-muted-foreground wrap-break-word hyphens-auto">
+      <p className="text-xs wrap-break-word hyphens-auto text-muted-foreground">
         {card.company || t("noCompany")}
       </p>
       {overlay ? (
@@ -53,6 +57,11 @@ export function ApplicationCard({
             {t("notAnalyzed")}
           </Badge>
         )}
+        {due ? (
+          <Badge variant={due === "overdue" ? "destructive" : "outline"}>
+            {due === "overdue" ? t("overdue") : t("dueToday")}
+          </Badge>
+        ) : null}
       </div>
       {card.nextStep || card.nextStepDue ? (
         <div className="flex min-w-0 items-start gap-1.5 text-sm">

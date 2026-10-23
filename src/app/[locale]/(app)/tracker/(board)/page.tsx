@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { KanbanBoard } from "@/components/tracker/kanban-board";
 import { getBoard } from "@/db/queries/applications";
+import { isoDay } from "@/features/dashboard/summary";
 import { APPLICATION_STATUSES } from "@/features/tracker/board";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -54,7 +55,7 @@ export default async function TrackerPage({
           )}
         </p>
       </div>
-      <KanbanBoard initial={board} />
+      <KanbanBoard initial={board} today={isoDay(new Date())} />
     </div>
   );
 }
