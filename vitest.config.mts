@@ -9,6 +9,8 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: true,
+    // One jsdom per worker instead of per file; files stay isolated.
+    pool: "vmThreads",
     // Playwright owns ./tests (see playwright.config.ts); keep unit and e2e
     // runners from tripping over each other's spec files.
     exclude: ["**/node_modules/**", "**/dist/**", "**/.next/**", "**/tests/**"],
