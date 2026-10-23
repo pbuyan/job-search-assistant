@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, min, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lt, min, ne, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   applicationEvents,
@@ -9,6 +9,7 @@ import {
   jobs,
   resumeVersions,
 } from "@/db/schema";
+import { OPEN_STATUSES } from "@/features/dashboard/summary";
 import {
   emptyBoard,
   placeInColumn,
@@ -36,6 +37,25 @@ export async function getApplicationForJob(userId: string, jobId: string) {
     .where(and(eq(applications.jobId, jobId), eq(applications.userId, userId)))
     .limit(1);
   return row ?? null;
+}
+
+// Open applications whose next step was due before `today` (YYYY-MM-DD, UTC);
+// the same rule as overdueSteps in src/features/dashboard/summary.ts.
+export async function countOverdueSteps(
+  userId: string,
+  today: string,
+): Promise<number> {
+  const [row] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(applications)
+    .where(
+      and(
+        eq(applications.userId, userId),
+        inArray(applications.status, [...OPEN_STATUSES]),
+        lt(applications.nextStepDue, today),
+      ),
+    );
+  return row?.count ?? 0;
 }
 
 // Cards per column, in board order, with the job's latest fit score.
@@ -143,7 +163,10 @@ export async function moveApplication(
 ): Promise<boolean> {
   return db.transaction(async (tx) => {
     const [app] = await tx
-      .select({ status: applications.status, appliedAt: applications.appliedAt })
+      .select({
+        status: applications.status,
+        appliedAt: applications.appliedAt,
+      })
       .from(applications)
       .where(
         and(
@@ -234,15 +257,29 @@ export async function getApplication(userId: string, id: string) {
   return row ?? null;
 }
 
-export type ApplicationRow = NonNullable<Awaited<ReturnType<typeof getApplication>>>;
+export type ApplicationRow = NonNullable<
+  Awaited<ReturnType<typeof getApplication>>
+>;
 
 // Saves the details form. A resume version must be the user's own; attaching
-// one locks it (see resume-versions.ts).
+// one locks it (see resume-versions.ts). `coverLetterDraft` is the model and
+// prompt version when the letter being saved started from an AI draft; a
+// cleared letter clears them, and other saves keep them.
 export async function updateApplication(
   userId: string,
   id: string,
   details: ApplicationDetails,
+  coverLetterDraft?: { model: string; promptVersion: string },
 ): Promise<"ok" | "notFound" | "invalidResume"> {
+  const provenance =
+    details.coverLetter === null
+      ? { coverLetterModel: null, coverLetterPromptVersion: null }
+      : coverLetterDraft
+        ? {
+            coverLetterModel: coverLetterDraft.model,
+            coverLetterPromptVersion: coverLetterDraft.promptVersion,
+          }
+        : {};
   return db.transaction(async (tx) => {
     if (details.resumeVersionId) {
       const [version] = await tx
@@ -265,6 +302,7 @@ export async function updateApplication(
         resumeVersionId: details.resumeVersionId,
         notes: details.notes,
         coverLetter: details.coverLetter,
+        ...provenance,
       })
       .where(and(eq(applications.id, id), eq(applications.userId, userId)))
       .returning({ id: applications.id });
@@ -294,7 +332,10 @@ export async function listEvents(userId: string, applicationId: string) {
       ),
     )
     .where(eq(applicationEvents.applicationId, applicationId))
-    .orderBy(desc(applicationEvents.occurredAt), desc(applicationEvents.createdAt));
+    .orderBy(
+      desc(applicationEvents.occurredAt),
+      desc(applicationEvents.createdAt),
+    );
 }
 
 // False when the application isn't the user's.
@@ -307,7 +348,12 @@ export async function addEvent(
     const [app] = await tx
       .select({ id: applications.id })
       .from(applications)
-      .where(and(eq(applications.id, applicationId), eq(applications.userId, userId)));
+      .where(
+        and(
+          eq(applications.id, applicationId),
+          eq(applications.userId, userId),
+        ),
+      );
     if (!app) return false;
     await tx.insert(applicationEvents).values({
       applicationId,
@@ -344,7 +390,10 @@ export async function deleteEvent(
 
 // "Stop tracking": the application, its timeline (cascade) and its contacts
 // go; the job stays. False when it isn't the user's.
-export async function deleteApplication(userId: string, id: string): Promise<boolean> {
+export async function deleteApplication(
+  userId: string,
+  id: string,
+): Promise<boolean> {
   return db.transaction(async (tx) => {
     await tx
       .delete(contacts)

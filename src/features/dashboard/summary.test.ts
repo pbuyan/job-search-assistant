@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { emptyBoard, type BoardCard } from "@/features/tracker/board";
-import { statusCounts, upcomingSteps } from "@/features/dashboard/summary";
+import {
+  dueState,
+  overdueSteps,
+  statusCounts,
+  upcomingSteps,
+} from "@/features/dashboard/summary";
 
 const card = (id: string, nextStepDue: string | null): BoardCard => ({
   id,
@@ -37,5 +42,26 @@ describe("dashboard summary", () => {
       "job-today",
       "job-late",
     ]);
+  });
+
+  it("lists overdue steps of open applications only, most overdue first", () => {
+    const board = emptyBoard();
+    board.applied.push(card("week", "2026-10-06"), card("today", "2026-10-13"));
+    board.interviewing.push(card("month", "2026-09-13"));
+    board.rejected.push(card("closed", "2026-10-01"));
+    board.saved.push(card("none", null), card("yesterday", "2026-10-12"));
+    const today = new Date("2026-10-13T23:30:00Z");
+    expect(overdueSteps(board, today).map((s) => s.jobId)).toEqual([
+      "job-month",
+      "job-week",
+      "job-yesterday",
+    ]);
+  });
+
+  it("marks a step overdue before its day and due on it", () => {
+    expect(dueState("2026-10-12", "2026-10-13")).toBe("overdue");
+    expect(dueState("2026-10-13", "2026-10-13")).toBe("today");
+    expect(dueState("2026-10-14", "2026-10-13")).toBeNull();
+    expect(dueState(null, "2026-10-13")).toBeNull();
   });
 });

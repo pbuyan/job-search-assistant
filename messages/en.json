@@ -10,7 +10,7 @@
     "themeDark": "Dark",
     "loading": "Loading…"
   },
-  "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker", "resumes": "Resumes", "settings": "Settings" },
+  "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker", "resumes": "Resumes", "settings": "Settings", "overdueCount": "{count, plural, one {# overdue next step} other {# overdue next steps}}" },
   "Sidebar": {
     "title": "Sidebar",
     "mobileDescription": "Displays the mobile sidebar.",
@@ -139,6 +139,8 @@
       "noApplications": "No applications yet.",
       "nextSteps": "Next steps this week",
       "noNextSteps": "Nothing due in the next 7 days.",
+      "overdue": "Overdue",
+      "wasDue": "Was due {date}",
       "due": "Due {date}",
       "recentScores": "Recent fit scores",
       "noScores": "No jobs analyzed yet.",
@@ -628,7 +630,9 @@
       "fit": "Fit {score}",
       "notAnalyzed": "Not analyzed",
       "nextStep": "Next step",
-      "due": "due {date}"
+      "due": "due {date}",
+      "overdue": "Overdue",
+      "dueToday": "Due today"
     },
     "a11y": {
       "roleDescription": "draggable application",
@@ -666,6 +670,24 @@
       "nextStepDue": "Next step due",
       "notes": "Notes",
       "coverLetter": "Cover letter",
+      "coverDraft": {
+        "button": "Draft with AI",
+        "drafting": "Drafting…",
+        "hint": "Written only from your profile, in your resume's language. Review it before you send it.",
+        "title": "AI draft",
+        "use": "Use this draft",
+        "discard": "Discard",
+        "replaceNote": "Using it replaces the text in the cover letter field. Nothing is saved until you click Save details.",
+        "errors": {
+          "unauthorized": "Your session has expired. Sign in again.",
+          "notFound": "This application or its job no longer exists. Reload the page.",
+          "noProfile": "Add work experience to your profile first; the letter is written from it.",
+          "noRequirements": "This job has no extracted requirements to write against.",
+          "parseFailed": "The draft couldn't be generated. Try again.",
+          "invalidCoverLetter": "The draft claimed something that isn't in your profile, so it was discarded. Try again.",
+          "quotaExceeded": "You've reached today's limit for this action. It resets at midnight UTC."
+        }
+      },
       "save": "Save details",
       "saving": "Saving…",
       "saved": "Details saved.",

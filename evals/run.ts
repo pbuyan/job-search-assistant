@@ -1,4 +1,4 @@
-// pnpm eval [--suite fit|tailor|translate|all] [--case <id>] [--concurrency <n>]
+// pnpm eval [--suite fit|tailor|translate|cover|all] [--case <id>] [--concurrency <n>]
 //
 // fit: runs the real extraction (parseJob) and fit analysis (analyzeFit) on
 // every case in CASES and checks the posting language, the score range, that
@@ -13,6 +13,10 @@
 // bullets line up with the source, that every bullet keeps its numbers, that
 // French bullets don't open on a bare past participle, that the answer was
 // valid on the first attempt, and the output language.
+// cover: drafts a cover letter with draftCoverLetter for every case in
+// COVER_CASES and checks that every citation is a profile bullet, that no
+// paragraph adds a number its cited bullets don't state, that the answer was
+// valid on the first attempt, and that the letter is in the resume's language.
 // Prints a table per suite and exits 1 if any check fails. Full results
 // (including model output) go to evals/results/, which is gitignored.
 //
@@ -26,8 +30,10 @@ import type { ParseJobResult } from "@/features/jobs/parse-job";
 import { profileDataSchema } from "@/prompts/schemas";
 import {
   CASES,
+  COVER_CASES,
   TAILOR_CASES,
   TRANSLATE_CASES,
+  type CoverCase,
   type EvalCase,
   type PostingId,
   type ProfileId,
@@ -35,6 +41,7 @@ import {
   type TranslateCase,
 } from "./cases";
 import {
+  checkCover,
   checkFit,
   checkParse,
   checkTailor,
@@ -86,6 +93,14 @@ type TranslateResult = {
   resume?: unknown;
 };
 
+type CoverResult = {
+  case: CoverCase;
+  checks: Check[];
+  error?: string;
+  problems?: unknown;
+  draft?: unknown;
+};
+
 const passed = (r: { error?: string; checks: Check[] }) =>
   !r.error && r.checks.every((c) => c.pass);
 
@@ -114,7 +129,7 @@ async function main() {
       concurrency: { type: "string", default: "3" },
     },
   });
-  if (!["fit", "tailor", "translate", "all"].includes(values.suite)) {
+  if (!["fit", "tailor", "translate", "cover", "all"].includes(values.suite)) {
     console.error(`Unknown suite: ${values.suite}`);
     process.exit(2);
   }
@@ -127,7 +142,14 @@ async function main() {
   const cases = pick(CASES, "fit");
   const tailorCases = pick(TAILOR_CASES, "tailor");
   const translateCases = pick(TRANSLATE_CASES, "translate");
-  if (cases.length + tailorCases.length + translateCases.length === 0) {
+  const coverCases = pick(COVER_CASES, "cover");
+  if (
+    cases.length +
+      tailorCases.length +
+      translateCases.length +
+      coverCases.length ===
+    0
+  ) {
     console.error(`Unknown case: ${values.case}`);
     process.exit(2);
   }
@@ -135,18 +157,18 @@ async function main() {
 
   const { parseJob } = await import("@/features/jobs/parse-job");
   const { analyzeFit } = await import("@/features/jobs/analyze-fit");
-  const { profileBullets, PROMPT_VERSION: fitVersion } = await import(
-    "@/prompts/fit-analysis"
-  );
+  const { profileBullets, PROMPT_VERSION: fitVersion } =
+    await import("@/prompts/fit-analysis");
   const { PROMPT_VERSION: parseVersion } = await import("@/prompts/parse-job");
   const { tailorResume } = await import("@/features/tailoring/tailor");
-  const { PROMPT_VERSION: tailorVersion } = await import(
-    "@/prompts/tailor-resume"
-  );
+  const { PROMPT_VERSION: tailorVersion } =
+    await import("@/prompts/tailor-resume");
   const { translateResume } = await import("@/features/translation/translate");
-  const { PROMPT_VERSION: translateVersion } = await import(
-    "@/prompts/translate-resume"
-  );
+  const { PROMPT_VERSION: translateVersion } =
+    await import("@/prompts/translate-resume");
+  const { draftCoverLetter } = await import("@/features/cover-letter/draft");
+  const { PROMPT_VERSION: coverVersion } =
+    await import("@/prompts/cover-letter");
   const { assembleResume } = await import("@/features/tailoring/assemble");
   const { MODEL_IDS } = await import("@/lib/ai/models");
 
@@ -158,57 +180,63 @@ async function main() {
   };
 
   const started = Date.now();
-  const results = await pool(cases, concurrency, async (c): Promise<CaseResult> => {
-    const parsed = await parse(c.posting);
-    if (!parsed.ok) return { case: c, checks: [], error: `parse:${parsed.error}` };
-    const { requirements, language } = parsed.output;
-    const checks = checkParse({
-      detected: language,
-      expected: c.expect.language,
-      requirementCount:
-        requirements.mustHave.length + requirements.niceToHave.length,
-    });
+  const results = await pool(
+    cases,
+    concurrency,
+    async (c): Promise<CaseResult> => {
+      const parsed = await parse(c.posting);
+      if (!parsed.ok)
+        return { case: c, checks: [], error: `parse:${parsed.error}` };
+      const { requirements, language } = parsed.output;
+      const checks = checkParse({
+        detected: language,
+        expected: c.expect.language,
+        requirementCount:
+          requirements.mustHave.length + requirements.niceToHave.length,
+      });
 
-    const profile = loadProfile(c.profile);
-    const fit = await analyzeFit({
-      requirements,
-      profile,
-      outputLanguage: c.outputLanguage,
-    });
-    if (!fit.ok)
+      const profile = loadProfile(c.profile);
+      const fit = await analyzeFit({
+        requirements,
+        profile,
+        outputLanguage: c.outputLanguage,
+      });
+      if (!fit.ok)
+        return {
+          case: c,
+          checks,
+          error: `fit:${fit.error}`,
+          problems: fit.problems,
+          parsedLanguage: language,
+        };
+
+      checks.push(
+        ...checkFit({
+          analysis: fit.analysis,
+          score: fit.score,
+          attempts: fit.attempts,
+          range: c.expect.score,
+          bulletIds: new Set(profileBullets(profile).map((b) => b.id)),
+          outputLanguage: c.outputLanguage,
+        }),
+      );
       return {
         case: c,
         checks,
-        error: `fit:${fit.error}`,
-        problems: fit.problems,
         parsedLanguage: language,
-      };
-
-    checks.push(
-      ...checkFit({
-        analysis: fit.analysis,
         score: fit.score,
-        attempts: fit.attempts,
-        range: c.expect.score,
-        bulletIds: new Set(profileBullets(profile).map((b) => b.id)),
-        outputLanguage: c.outputLanguage,
-      }),
-    );
-    return {
-      case: c,
-      checks,
-      parsedLanguage: language,
-      score: fit.score,
-      analysis: fit.analysis,
-    };
-  });
+        analysis: fit.analysis,
+      };
+    },
+  );
 
   const tailorResults = await pool(
     tailorCases,
     concurrency,
     async (c): Promise<TailorResult> => {
       const parsed = await parse(c.posting);
-      if (!parsed.ok) return { case: c, checks: [], error: `parse:${parsed.error}` };
+      if (!parsed.ok)
+        return { case: c, checks: [], error: `parse:${parsed.error}` };
       const profile = loadProfile(c.profile);
       // The resume language is the profile's, never the posting's.
       const tailored = await tailorResume({
@@ -231,7 +259,9 @@ async function main() {
             (e) => e.bullets,
           ),
           attempts: tailored.attempts,
-          masterBullets: new Map(profileBullets(profile).map((b) => [b.id, b.text])),
+          masterBullets: new Map(
+            profileBullets(profile).map((b) => [b.id, b.text]),
+          ),
           language: c.expect.language,
         }),
         attempts: tailored.attempts,
@@ -251,11 +281,17 @@ async function main() {
           summary: profile.basics.summary,
           work: profile.work.map((w) => ({
             sourceWorkId: w.id,
-            bullets: w.bullets.map((b) => ({ sourceBulletId: b.id, text: b.text })),
+            bullets: w.bullets.map((b) => ({
+              sourceBulletId: b.id,
+              text: b.text,
+            })),
           })),
           projects: (profile.projects ?? []).map((p) => ({
             sourceProjectId: p.id,
-            bullets: p.bullets.map((b) => ({ sourceBulletId: b.id, text: b.text })),
+            bullets: p.bullets.map((b) => ({
+              sourceBulletId: b.id,
+              text: b.text,
+            })),
           })),
           skills: profile.skills,
         },
@@ -286,20 +322,67 @@ async function main() {
     },
   );
 
+  const coverResults = await pool(
+    coverCases,
+    concurrency,
+    async (c): Promise<CoverResult> => {
+      const parsed = await parse(c.posting);
+      if (!parsed.ok)
+        return { case: c, checks: [], error: `parse:${parsed.error}` };
+      const profile = loadProfile(c.profile);
+      const drafted = await draftCoverLetter({
+        job: parsed.output.job,
+        requirements: parsed.output.requirements,
+        profile,
+        letterLanguage: c.expect.language,
+      });
+      if (!drafted.ok)
+        return {
+          case: c,
+          checks: [],
+          error: `cover:${drafted.error}`,
+          problems: drafted.problems,
+        };
+      return {
+        case: c,
+        checks: checkCover({
+          paragraphs: drafted.draft.paragraphs,
+          attempts: drafted.attempts,
+          masterBullets: new Map(
+            profileBullets(profile).map((b) => [b.id, b.text]),
+          ),
+          job: parsed.output.job,
+          language: c.expect.language,
+        }),
+        draft: drafted.draft,
+      };
+    },
+  );
+
   if (results.length > 0) printTable(results);
   if (tailorResults.length > 0) printTailorTable(tailorResults);
   if (translateResults.length > 0) printTranslateTable(translateResults);
-  const failures = [...results, ...tailorResults, ...translateResults].filter(
-    (r) => !passed(r),
-  );
-  const total = results.length + tailorResults.length + translateResults.length;
+  if (coverResults.length > 0) printCoverTable(coverResults);
+  const failures = [
+    ...results,
+    ...tailorResults,
+    ...translateResults,
+    ...coverResults,
+  ].filter((r) => !passed(r));
+  const total =
+    results.length +
+    tailorResults.length +
+    translateResults.length +
+    coverResults.length;
   console.log(
-    `\n${total - failures.length}/${total} passed in ${Math.round((Date.now() - started) / 1000)} s · ${parseVersion} · ${fitVersion} · ${tailorVersion} · ${translateVersion} · ${MODEL_IDS.parseJob} / ${MODEL_IDS.fitAnalysis} / ${MODEL_IDS.tailorResume} / ${MODEL_IDS.translateResume}`,
+    `\n${total - failures.length}/${total} passed in ${Math.round((Date.now() - started) / 1000)} s · ${parseVersion} · ${fitVersion} · ${tailorVersion} · ${translateVersion} · ${coverVersion} · ${MODEL_IDS.parseJob} / ${MODEL_IDS.fitAnalysis} / ${MODEL_IDS.tailorResume} / ${MODEL_IDS.translateResume} / ${MODEL_IDS.coverLetter}`,
   );
   for (const r of failures) {
     const reasons = [
       r.error,
-      ...r.checks.filter((c) => !c.pass).map((c) => `${c.name}: ${c.detail ?? "failed"}`),
+      ...r.checks
+        .filter((c) => !c.pass)
+        .map((c) => `${c.name}: ${c.detail ?? "failed"}`),
     ].filter(Boolean);
     console.log(`  ✗ ${r.case.id} — ${reasons.join("; ")}`);
     if (r.problems) console.log(`    problems: ${JSON.stringify(r.problems)}`);
@@ -307,7 +390,10 @@ async function main() {
 
   const dir = join(ROOT, "results");
   mkdirSync(dir, { recursive: true });
-  const file = join(dir, `${new Date().toISOString().replace(/[:.]/g, "-")}.json`);
+  const file = join(
+    dir,
+    `${new Date().toISOString().replace(/[:.]/g, "-")}.json`,
+  );
   writeFileSync(
     file,
     JSON.stringify(
@@ -317,17 +403,27 @@ async function main() {
           fitAnalysis: fitVersion,
           tailorResume: tailorVersion,
           translateResume: translateVersion,
+          coverLetter: coverVersion,
         },
         models: MODEL_IDS,
         passed: total - failures.length,
         total,
-        results: results.map((r) => ({ ...r, case: r.case.id, pass: passed(r) })),
+        results: results.map((r) => ({
+          ...r,
+          case: r.case.id,
+          pass: passed(r),
+        })),
         tailorResults: tailorResults.map((r) => ({
           ...r,
           case: r.case.id,
           pass: passed(r),
         })),
         translateResults: translateResults.map((r) => ({
+          ...r,
+          case: r.case.id,
+          pass: passed(r),
+        })),
+        coverResults: coverResults.map((r) => ({
           ...r,
           case: r.case.id,
           pass: passed(r),
@@ -356,7 +452,9 @@ function printRows(header: string[], rows: string[][]) {
   console.log(line(header));
   console.log(widths.map((w) => "─".repeat(w)).join("  "));
   for (const row of rows) console.log(line(row));
-  console.log("\n✓ pass  ✗ fail  ? undecided (text too short to detect)  – not run");
+  console.log(
+    "\n✓ pass  ✗ fail  ? undecided (text too short to detect)  – not run",
+  );
 }
 
 function printTailorTable(results: TailorResult[]) {
@@ -378,7 +476,16 @@ function printTailorTable(results: TailorResult[]) {
 function printTranslateTable(results: TranslateResult[]) {
   console.log("");
   printRows(
-    ["case", "from→to", "structure", "numbers", "style", "1st try", "lang", "result"],
+    [
+      "case",
+      "from→to",
+      "structure",
+      "numbers",
+      "style",
+      "1st try",
+      "lang",
+      "result",
+    ],
     results.map((r) => [
       r.case.id,
       `${r.case.from}→${r.case.to}`,
@@ -392,13 +499,27 @@ function printTranslateTable(results: TranslateResult[]) {
   );
 }
 
+function printCoverTable(results: CoverResult[]) {
+  console.log("");
+  printRows(
+    ["case", "job→prof", "sources", "numbers", "1st try", "lang", "result"],
+    results.map((r) => [
+      r.case.id,
+      `${r.case.posting.slice(0, 2)}→${r.case.profile.slice(-2)}`,
+      r.error ?? mark(r, "sources"),
+      mark(r, "numbers"),
+      mark(r, "firstTry"),
+      mark(r, "language"),
+      passed(r) ? "PASS" : "FAIL",
+    ]),
+  );
+}
+
 function printTable(results: CaseResult[]) {
   const rows = results.map((r) => [
     r.case.id,
     `${r.case.posting.slice(0, 2)}→${r.case.profile.slice(-2)}→${r.case.outputLanguage}`,
-    r.parsedLanguage
-      ? `${r.parsedLanguage}${mark(r, "parseLanguage")}`
-      : "–",
+    r.parsedLanguage ? `${r.parsedLanguage}${mark(r, "parseLanguage")}` : "–",
     r.score === undefined ? (r.error ?? "–") : String(r.score),
     `${r.case.expect.score[0]}–${r.case.expect.score[1]}`,
     mark(r, "score"),

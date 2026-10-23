@@ -8,6 +8,7 @@ export const MODEL_IDS = {
   fitAnalysis: "claude-opus-5-5",
   tailorResume: "claude-opus-5-5",
   translateResume: "claude-opus-5-5",
+  coverLetter: "claude-opus-5-5",
 } as const;
 
 // ANTHROPIC_API_KEY is read from the environment. A user-scoped key (not tied
@@ -25,3 +26,4 @@ export const fitAnalysisModel = () => provider(MODEL_IDS.fitAnalysis);
 export const tailorResumeModel = () => provider(MODEL_IDS.tailorResume);
 export const translateResumeModel = () =>
   provider(MODEL_IDS.translateResume);
+export const coverLetterModel = () => provider(MODEL_IDS.coverLetter);

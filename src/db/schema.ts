@@ -135,6 +135,9 @@ export const applications = pgTable("applications", {
   nextStep: text("next_step"),
   nextStepDue: date("next_step_due"),
   coverLetter: text("cover_letter"),
+  // Set when the saved letter started from an AI draft; cleared with the letter.
+  coverLetterModel: text("cover_letter_model"),
+  coverLetterPromptVersion: text("cover_letter_prompt_version"),
   notes: text("notes"),
   ...timestamps,
 }, (t) => [
@@ -175,6 +178,7 @@ export const contacts = pgTable("contacts", {
 // One row per user, feature and UTC day; `count` is the calls made that day.
 export const aiFeature = pgEnum("ai_feature", [
   "parseResume", "parseJob", "fitAnalysis", "tailorResume", "translateResume", "embedProfile",
+  "coverLetter",
 ]);
 export const aiUsage = pgTable("ai_usage", {
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),

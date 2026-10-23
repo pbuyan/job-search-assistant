@@ -12,8 +12,14 @@ import {
 } from "@/db/queries/applications";
 import { addContact, deleteContact } from "@/db/queries/contacts";
 import { snapshotSentResume } from "@/features/export/snapshot";
+import { MODEL_IDS } from "@/lib/ai/models";
+import { PROMPT_VERSION as COVER_LETTER_PROMPT_VERSION } from "@/prompts/cover-letter";
 import { APPLICATION_STATUSES } from "./board";
-import { applicationDetailsSchema, contactSchema, eventSchema } from "./schemas";
+import {
+  applicationDetailsSchema,
+  contactSchema,
+  eventSchema,
+} from "./schemas";
 
 export type TrackerError = "unauthorized" | "notFound" | "failed";
 type Result = { ok: true } | { ok: false; error: TrackerError };
@@ -52,11 +58,7 @@ export async function moveApplication(input: unknown): Promise<Result> {
 
 // The application page's actions.
 export type ApplicationError =
-  | "unauthorized"
-  | "invalid"
-  | "invalidResume"
-  | "notFound"
-  | "failed";
+  "unauthorized" | "invalid" | "invalidResume" | "notFound" | "failed";
 type ApplicationResult = { ok: true } | { ok: false; error: ApplicationError };
 
 // Signed-in user, Zod-validated input, then a query that only touches that
@@ -83,15 +85,37 @@ async function run<S extends z.ZodType>(
   }
 }
 
-const detailsInput = applicationDetailsSchema.extend({ id: z.uuid() });
+// coverLetterFromDraft: the letter being saved started from an AI draft, so
+// its model and prompt version are stored with it (set here, not by the
+// client).
+const detailsInput = applicationDetailsSchema.extend({
+  id: z.uuid(),
+  coverLetterFromDraft: z.boolean().optional(),
+});
 export async function saveApplicationDetails(input: unknown) {
-  return run(input, detailsInput, async (userId, { id, ...details }) => {
-    const result = await updateApplication(userId, id, details);
-    // The attached version is now locked: keep the PDF that was sent.
-    if (result === "ok" && details.resumeVersionId)
-      await snapshotSentResume(userId, details.resumeVersionId);
-    return result;
-  });
+  return run(
+    input,
+    detailsInput,
+    async (userId, { id, coverLetterFromDraft, ...details }) => {
+      const result = await updateApplication(
+        userId,
+        id,
+        details,
+        ...(coverLetterFromDraft
+          ? [
+              {
+                model: MODEL_IDS.coverLetter,
+                promptVersion: COVER_LETTER_PROMPT_VERSION,
+              },
+            ]
+          : []),
+      );
+      // The attached version is now locked: keep the PDF that was sent.
+      if (result === "ok" && details.resumeVersionId)
+        await snapshotSentResume(userId, details.resumeVersionId);
+      return result;
+    },
+  );
 }
 
 const eventInput = eventSchema.extend({ applicationId: z.uuid() });
@@ -113,7 +137,9 @@ export async function addApplicationContact(input: unknown) {
 }
 
 export async function deleteApplicationContact(id: unknown) {
-  return run(id, z.uuid(), (userId, contactId) => deleteContact(userId, contactId));
+  return run(id, z.uuid(), (userId, contactId) =>
+    deleteContact(userId, contactId),
+  );
 }
 
 // The application, its timeline and contacts go; the job stays.

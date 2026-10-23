@@ -62,7 +62,9 @@ export function checkFit(input: {
   const unknown = analysis.matched.flatMap((m) =>
     m.evidenceBulletIds.filter((id) => !input.bulletIds.has(id)),
   );
-  const empty = analysis.matched.filter((m) => m.evidenceBulletIds.length === 0);
+  const empty = analysis.matched.filter(
+    (m) => m.evidenceBulletIds.length === 0,
+  );
 
   return [
     {
@@ -104,7 +106,9 @@ function languageCheck(
   const detected = Object.entries(parts).map(
     ([part, text]) => [part, detectLanguage(text)] as const,
   );
-  const wrong = detected.filter(([, lang]) => lang !== expected && lang !== "unknown");
+  const wrong = detected.filter(
+    ([, lang]) => lang !== expected && lang !== "unknown",
+  );
   const unsure = detected.filter(([, lang]) => lang === "unknown");
   const detail = detected.map(([part, lang]) => `${part}=${lang}`).join(" ");
 
@@ -129,9 +133,13 @@ export function checkTailor(input: {
   masterBullets: ReadonlyMap<string, string>;
   language: Language;
 }): Check[] {
-  const unknown = input.bullets.filter((b) => !input.masterBullets.has(b.sourceBulletId));
+  const unknown = input.bullets.filter(
+    (b) => !input.masterBullets.has(b.sourceBulletId),
+  );
   const added = input.bullets.filter((b) => {
-    const allowed = new Set(numbers(input.masterBullets.get(b.sourceBulletId) ?? ""));
+    const allowed = new Set(
+      numbers(input.masterBullets.get(b.sourceBulletId) ?? ""),
+    );
     return numbers(b.text).some((n) => !allowed.has(n));
   });
   const detected = detectLanguage(input.bullets.map((b) => b.text).join("\n"));
@@ -159,7 +167,68 @@ export function checkTailor(input: {
     },
     detected === "unknown"
       ? { name: "language", pass: true, warn: true, detail: detected }
-      : { name: "language", pass: detected === input.language, detail: detected },
+      : {
+          name: "language",
+          pass: detected === input.language,
+          detail: detected,
+        },
+  ];
+}
+
+// Cover letter: every cited id is a profile bullet and at least one is
+// cited, each paragraph only uses numbers from the bullets it cites (or the
+// job's title and company), and the letter is in the resume's language.
+export function checkCover(input: {
+  paragraphs: { text: string; sourceBulletIds: string[] }[];
+  attempts: number;
+  masterBullets: ReadonlyMap<string, string>;
+  job: { title: string; company: string };
+  language: Language;
+}): Check[] {
+  const cited = input.paragraphs.flatMap((p) => p.sourceBulletIds);
+  const unknown = cited.filter((id) => !input.masterBullets.has(id));
+  const jobNumbers = numbers(`${input.job.title} ${input.job.company}`);
+  const added = input.paragraphs.flatMap((p, i) => {
+    const allowed = new Set([
+      ...jobNumbers,
+      ...p.sourceBulletIds.flatMap((id) =>
+        numbers(input.masterBullets.get(id) ?? ""),
+      ),
+    ]);
+    return numbers(p.text).some((n) => !allowed.has(n)) ? [i] : [];
+  });
+  const detected = detectLanguage(
+    input.paragraphs.map((p) => p.text).join("\n"),
+  );
+  return [
+    {
+      name: "sources",
+      pass: unknown.length === 0 && cited.length > 0,
+      detail:
+        unknown.length > 0
+          ? `unknown ids: ${unknown.join(", ")}`
+          : `${input.paragraphs.length} paragraphs, ${cited.length} citations`,
+    },
+    {
+      name: "numbers",
+      pass: added.length === 0,
+      detail:
+        added.length > 0
+          ? `new numbers in paragraphs: ${added.join(", ")}`
+          : undefined,
+    },
+    {
+      name: "firstTry",
+      pass: input.attempts === 1,
+      detail: `${input.attempts} attempt(s)`,
+    },
+    detected === "unknown"
+      ? { name: "language", pass: true, warn: true, detail: detected }
+      : {
+          name: "language",
+          pass: detected === input.language,
+          detail: detected,
+        },
   ];
 }
 
@@ -179,23 +248,40 @@ export function checkTranslate(input: {
 }): Check[] {
   const outline = (r: ResumeShape) =>
     JSON.stringify([
-      ...r.work.map((w) => [w.sourceWorkId, w.company, w.bullets.map((b) => b.sourceBulletId)]),
-      ...(r.projects ?? []).map((p) => [p.sourceProjectId, p.bullets.map((b) => b.sourceBulletId)]),
+      ...r.work.map((w) => [
+        w.sourceWorkId,
+        w.company,
+        w.bullets.map((b) => b.sourceBulletId),
+      ]),
+      ...(r.projects ?? []).map((p) => [
+        p.sourceProjectId,
+        p.bullets.map((b) => b.sourceBulletId),
+      ]),
     ]);
   const bullets = (r: ResumeShape) =>
     [...r.work, ...(r.projects ?? [])].flatMap((e) => e.bullets);
-  const outBullets = new Map(bullets(input.out).map((b) => [b.sourceBulletId, b.text]));
+  const outBullets = new Map(
+    bullets(input.out).map((b) => [b.sourceBulletId, b.text]),
+  );
   const changed = bullets(input.source).filter((b) => {
     const a = numbers(b.text).sort().join(" ");
-    const c = numbers(outBullets.get(b.sourceBulletId) ?? "").sort().join(" ");
+    const c = numbers(outBullets.get(b.sourceBulletId) ?? "")
+      .sort()
+      .join(" ");
     return a !== c;
   });
-  const detected = detectLanguage(bullets(input.out).map((b) => b.text).join("\n"));
+  const detected = detectLanguage(
+    bullets(input.out)
+      .map((b) => b.text)
+      .join("\n"),
+  );
   // French bullets opening on a bare past participle ("Dirigé la…") are an
   // anglicism; a first word ending in -é(e)(s) is a cheap, close signal.
   const bare =
     input.language === "fr"
-      ? bullets(input.out).filter((b) => /^\p{L}+é(e)?s?\s/u.test(b.text.trim()))
+      ? bullets(input.out).filter((b) =>
+          /^\p{L}+é(e)?s?\s/u.test(b.text.trim()),
+        )
       : [];
   return [
     { name: "structure", pass: outline(input.source) === outline(input.out) },
@@ -222,6 +308,10 @@ export function checkTranslate(input: {
     },
     detected === "unknown"
       ? { name: "language", pass: true, warn: true, detail: detected }
-      : { name: "language", pass: detected === input.language, detail: detected },
+      : {
+          name: "language",
+          pass: detected === input.language,
+          detail: detected,
+        },
   ];
 }

@@ -207,6 +207,37 @@ export const TAILOR_CASES: TailorCase[] = [
   },
 ];
 
+// Cover letter cases: posting × profile. The letter is written in the
+// resume's (here the profile's) language, whatever the posting's.
+export type CoverCase = {
+  id: string;
+  posting: PostingId;
+  profile: ProfileId;
+  expect: { language: Language };
+};
+
+export const COVER_CASES: CoverCase[] = [
+  {
+    id: "c-en-intermediate-dev",
+    posting: "en-appdirect-intermediate-dev",
+    profile: "dev-en",
+    expect: { language: "en" },
+  },
+  {
+    id: "c-fr-dev-intermediaire",
+    posting: "fr-appdirect-dev-intermediaire",
+    profile: "dev-fr",
+    expect: { language: "fr" },
+  },
+  {
+    // French posting, English resume: the letter stays in English.
+    id: "c-x-fr-job-en-profile",
+    posting: "fr-lightspeed-dev-servicenow",
+    profile: "dev-en",
+    expect: { language: "en" },
+  },
+];
+
 // Translation cases: a whole fixture profile as a resume version, into the
 // other language.
 export type TranslateCase = {
