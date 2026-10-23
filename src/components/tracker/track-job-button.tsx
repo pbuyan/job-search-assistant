@@ -22,12 +22,7 @@ export function TrackJobButton({ jobId }: { jobId: string }) {
 
   return (
     <div className="flex flex-col gap-1">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={track}
-        disabled={pending}
-      >
+      <Button type="button" variant="outline" onClick={track} disabled={pending}>
         {pending ? t("adding") : t("add")}
       </Button>
       {error ? (
