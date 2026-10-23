@@ -213,7 +213,8 @@
     "export": {
       "title": "Télécharger en tant que CV :",
       "pdf": "PDF",
-      "docx": "Word"
+      "docx": "Word",
+      "original": "Fichier original importé"
     },
     "matching": {
       "privacy": "Pour vous proposer des emplois, le texte de votre profil enregistré est aussi envoyé à Voyage AI.",
@@ -294,6 +295,7 @@
     "save": "Enregistrer le profil",
     "saving": "Enregistrement…",
     "saved": "Profil enregistré.",
+    "savedNoFile": "Profil enregistré, mais le fichier original n'a pas pu être conservé.",
     "saveError": {
       "unauthorized": "Votre session a expiré. Reconnectez-vous.",
       "invalid": "Certains champs sont invalides. Vérifiez le formulaire et réessayez.",
@@ -655,6 +657,7 @@
       "backToTracker": "Retour au suivi",
       "details": "Détails",
       "sentResume": "CV envoyé : <link>{name}</link>. Il est verrouillé pour conserver ce que vous avez envoyé.",
+      "sentFile": "Télécharger le PDF envoyé",
       "appliedOn": "Date de la candidature",
       "resume": "CV envoyé",
       "noResume": "Aucun",

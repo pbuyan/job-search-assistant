@@ -29,7 +29,7 @@ export type ExtractResult =
 
 // Decide the format from the file's bytes, not its name or declared MIME
 // type, which the client controls.
-function sniff(bytes: Uint8Array): "pdf" | "docx" | null {
+export function sniff(bytes: Uint8Array): "pdf" | "docx" | null {
   const head = (n: number) => String.fromCharCode(...bytes.subarray(0, n));
   if (head(5) === "%PDF-") return "pdf";
   if (head(4) === "PK\x03\x04") return "docx"; // validated by mammoth below

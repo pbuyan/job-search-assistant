@@ -19,6 +19,14 @@ vi.mock("@/db/queries/users", () => ({
   deleteUserData: (...a: unknown[]) => deleteUserData(...(a as [])),
 }));
 
+let storage = false;
+const deleteByPrefix = vi.fn(async () => {});
+vi.mock("@/lib/storage", () => ({
+  storageEnabled: () => storage,
+  storageKeys: { userPrefix: (id: string) => `users/${id}/` },
+  deleteByPrefix: (...a: unknown[]) => deleteByPrefix(...(a as [])),
+}));
+
 const verifyWebhook = vi.fn();
 vi.mock("@clerk/nextjs/webhooks", () => ({
   verifyWebhook: (...a: unknown[]) => verifyWebhook(...a),
@@ -26,9 +34,28 @@ vi.mock("@clerk/nextjs/webhooks", () => ({
 
 beforeEach(() => {
   userId = "user-1";
+  storage = false;
   deleteUser.mockClear();
   deleteUserData.mockClear();
+  deleteByPrefix.mockClear();
   verifyWebhook.mockReset();
+});
+
+describe("eraseUserData", () => {
+  it("deletes the user's files before their rows, and keeps the rows if that fails", async () => {
+    const { eraseUserData } = await import("./erase");
+    storage = true;
+    await eraseUserData("user-1");
+    expect(deleteByPrefix).toHaveBeenCalledWith("users/user-1/");
+    expect(deleteByPrefix.mock.invocationCallOrder[0]).toBeLessThan(
+      deleteUserData.mock.invocationCallOrder[0],
+    );
+
+    deleteUserData.mockClear();
+    deleteByPrefix.mockRejectedValueOnce(new Error("blob down"));
+    await expect(eraseUserData("user-1")).rejects.toThrow();
+    expect(deleteUserData).not.toHaveBeenCalled();
+  });
 });
 
 describe("deleteAccount", () => {

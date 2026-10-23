@@ -103,3 +103,28 @@ export async function getProfileForEmbedding(userId: string) {
     .limit(1);
   return row ?? null;
 }
+
+// Storage key of the resume file the profile was imported from, if kept.
+export async function getSourceFileKey(userId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ key: profiles.sourceFileKey })
+    .from(profiles)
+    .where(eq(profiles.userId, userId))
+    .limit(1);
+  return row?.key ?? null;
+}
+
+// Keeps updated_at as it is: the file isn't part of the profile's content,
+// and a new updated_at would make an in-flight embedding look stale.
+// False when the user has no profile.
+export async function setSourceFileKey(
+  userId: string,
+  key: string,
+): Promise<boolean> {
+  const rows = await db
+    .update(profiles)
+    .set({ sourceFileKey: key, updatedAt: sql`${profiles.updatedAt}` })
+    .where(eq(profiles.userId, userId))
+    .returning({ id: profiles.id });
+  return rows.length > 0;
+}

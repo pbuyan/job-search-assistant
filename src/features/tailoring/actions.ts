@@ -16,6 +16,7 @@ import {
   updateResumeVersionData,
 } from "@/db/queries/resume-versions";
 import { MODEL_IDS } from "@/lib/ai/models";
+import { deleteByPrefix, storageEnabled, storageKeys } from "@/lib/storage";
 import {
   PROMPT_VERSION,
   tailorPlanSchema,
@@ -158,6 +159,10 @@ export async function deleteResumeVersion(id: unknown): Promise<Result> {
   const parsed = z.uuid().safeParse(id);
   if (!parsed.success) return { ok: false, error: "notFound" };
   try {
+    // Files first, so a failure never leaves a sent resume behind. The prefix
+    // is under the user's own folder, so a forged id deletes nothing else.
+    if (storageEnabled())
+      await deleteByPrefix(storageKeys.sentResumePrefix(userId, parsed.data));
     const deleted = await deleteResumeVersionRow(userId, parsed.data);
     return deleted ? { ok: true } : { ok: false, error: "notFound" };
   } catch {

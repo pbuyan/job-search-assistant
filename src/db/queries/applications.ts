@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, min, ne } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, min, ne, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   applicationEvents,
@@ -212,6 +212,7 @@ export async function getApplication(userId: string, id: string) {
       coverLetter: applications.coverLetter,
       resumeVersionId: applications.resumeVersionId,
       resumeVersionName: resumeVersions.name,
+      hasSentFile: sql<boolean>`${resumeVersions.exportedFileKey} is not null`,
       jobId: jobs.id,
       jobTitle: jobs.title,
       jobCompany: jobs.company,

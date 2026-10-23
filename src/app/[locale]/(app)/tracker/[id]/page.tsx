@@ -118,6 +118,19 @@ export default async function ApplicationPage({
                   </Link>
                 ),
               })}
+              {app.hasSentFile ? (
+                <>
+                  {" · "}
+                  {/* Streams from a route handler, so a plain link. */}
+                  <a
+                    href={`/api/resumes/${app.resumeVersionId}/sent-file`}
+                    download
+                    className="underline underline-offset-4"
+                  >
+                    {t("sentFile")}
+                  </a>
+                </>
+              ) : null}
             </p>
           ) : null}
           <DetailsForm

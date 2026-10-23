@@ -213,7 +213,8 @@
     "export": {
       "title": "Download as a resume:",
       "pdf": "PDF",
-      "docx": "Word"
+      "docx": "Word",
+      "original": "Original file you imported"
     },
     "matching": {
       "privacy": "To match you with jobs, the text of your saved profile is also sent to Voyage AI.",
@@ -294,6 +295,7 @@
     "save": "Save profile",
     "saving": "Saving…",
     "saved": "Profile saved.",
+    "savedNoFile": "Profile saved, but the original file couldn't be kept.",
     "saveError": {
       "unauthorized": "Your session has expired. Sign in again.",
       "invalid": "Some fields are invalid. Check the form and try again.",
@@ -655,6 +657,7 @@
       "backToTracker": "Back to the tracker",
       "details": "Details",
       "sentResume": "Resume sent: <link>{name}</link>. It's locked so you keep what you sent.",
+      "sentFile": "Download the PDF you sent",
       "appliedOn": "Applied on",
       "resume": "Resume sent",
       "noResume": "None",

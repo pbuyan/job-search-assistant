@@ -11,6 +11,7 @@ import {
   updateApplication,
 } from "@/db/queries/applications";
 import { addContact, deleteContact } from "@/db/queries/contacts";
+import { snapshotSentResume } from "@/features/export/snapshot";
 import { APPLICATION_STATUSES } from "./board";
 import { applicationDetailsSchema, contactSchema, eventSchema } from "./schemas";
 
@@ -84,9 +85,13 @@ async function run<S extends z.ZodType>(
 
 const detailsInput = applicationDetailsSchema.extend({ id: z.uuid() });
 export async function saveApplicationDetails(input: unknown) {
-  return run(input, detailsInput, (userId, { id, ...details }) =>
-    updateApplication(userId, id, details),
-  );
+  return run(input, detailsInput, async (userId, { id, ...details }) => {
+    const result = await updateApplication(userId, id, details);
+    // The attached version is now locked: keep the PDF that was sent.
+    if (result === "ok" && details.resumeVersionId)
+      await snapshotSentResume(userId, details.resumeVersionId);
+    return result;
+  });
 }
 
 const eventInput = eventSchema.extend({ applicationId: z.uuid() });

@@ -11,7 +11,11 @@ import {
 import { ProfileForm } from "@/components/profile/profile-form";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getMatchingState, getProfile } from "@/db/queries/profile";
+import {
+  getMatchingState,
+  getProfile,
+  getSourceFileKey,
+} from "@/db/queries/profile";
 import { CURRENCIES } from "@/features/matching/schemas";
 import { RESUME_LANGUAGES, type ProfileSaveInput } from "@/features/profile/schemas";
 import { redirect } from "@/i18n/navigation";
@@ -53,9 +57,10 @@ export default async function ProfilePage({
   if (!userId) return redirect({ href: "/sign-in", locale });
 
   const t = await getTranslations("Profile");
-  const [stored, matching] = await Promise.all([
+  const [stored, matching, sourceFileKey] = await Promise.all([
     getProfile(userId),
     getMatchingState(userId),
+    getSourceFileKey(userId),
   ]);
   const language = RESUME_LANGUAGES.find((l) => l === stored?.language) ?? "en";
   const initial: ProfileSaveInput = stored
@@ -84,6 +89,16 @@ export default async function ProfilePage({
               {t(`export.${format}`)}
             </a>
           ))}
+          {sourceFileKey ? (
+            <a
+              href="/api/profile/source-file"
+              download
+              className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+            >
+              <Download aria-hidden />
+              {t("export.original")}
+            </a>
+          ) : null}
         </div>
       ) : null}
       <p className="text-start text-sm text-muted-foreground">
