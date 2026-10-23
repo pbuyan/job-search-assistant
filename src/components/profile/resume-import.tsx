@@ -9,7 +9,12 @@ import { Input } from "@/components/ui/input";
 import { MAX_FILE_BYTES, MAX_FILE_MB } from "@/features/profile/upload-limits";
 import type { ProfileDataInput } from "@/prompts/schemas";
 
-export type ParsedResume = { data: ProfileDataInput; language: string };
+// `file` is the upload itself, so the form can keep it once the user saves.
+export type ParsedResume = {
+  data: ProfileDataInput;
+  language: string;
+  file?: File;
+};
 
 type ErrorKey =
   | "noFile"
@@ -68,7 +73,7 @@ export function ResumeImport({
       const result = json as
         ({ ok: true } & ParsedResume) | { ok: false; error: string } | null;
       if (res.ok && result?.ok) {
-        onParsed({ data: result.data, language: result.language });
+        onParsed({ data: result.data, language: result.language, file });
         if (input.current) input.current.value = "";
       } else if (res.status === 413) {
         // The platform (e.g. Vercel's 4.5 MB cap) can reject the body before

@@ -46,9 +46,27 @@ type Proposal = {
   diff: ProfileDiff;
   detected: string;
   applied: boolean;
+  file?: File;
 };
 
-type Status = "idle" | "saved" | "unauthorized" | "invalid" | "failed";
+type Status =
+  "idle" | "saved" | "savedNoFile" | "unauthorized" | "invalid" | "failed";
+
+// Keeps the imported file once its profile is saved. Best effort: the
+// profile save already succeeded. 503 means storage isn't set up (local dev).
+async function keepSourceFile(file: File): Promise<boolean> {
+  const body = new FormData();
+  body.set("file", file);
+  try {
+    const res = await fetch("/api/profile/source-file", {
+      method: "POST",
+      body,
+    });
+    return res.ok || res.status === 503;
+  } catch {
+    return false;
+  }
+}
 
 export function ProfileForm({ initial }: { initial: ProfileSaveInput }) {
   const t = useTranslations("Profile");
@@ -94,8 +112,10 @@ export function ProfileForm({ initial }: { initial: ProfileSaveInput }) {
         language: result.language as ResumeLanguage,
         data: toFormValues(result.data),
       });
+      // Only now, with the import accepted and saved, is the file kept.
+      const kept = proposal?.file ? await keepSourceFile(proposal.file) : true;
       setProposal(null);
-      setStatus("saved");
+      setStatus(kept ? "saved" : "savedNoFile");
       // The page shows whether job matching is up to date after this save.
       router.refresh();
     });
@@ -119,6 +139,7 @@ export function ProfileForm({ initial }: { initial: ProfileSaveInput }) {
       diff: diffProfiles(previous.data, parsed.data),
       detected: parsed.language,
       applied: supported,
+      file: parsed.file,
     });
     setStatus("idle");
     reset({ language, data: parsed.data }, { keepDefaultValues: true });
@@ -446,7 +467,8 @@ export function ProfileForm({ initial }: { initial: ProfileSaveInput }) {
             className="text-start text-sm text-muted-foreground"
           >
             {status === "saved" ? t("saved") : null}
-            {status !== "idle" && status !== "saved"
+            {status === "savedNoFile" ? t("savedNoFile") : null}
+            {status !== "idle" && status !== "saved" && status !== "savedNoFile"
               ? t(`saveError.${status}`)
               : null}
           </p>

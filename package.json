@@ -29,6 +29,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.9.1",
     "@react-pdf/renderer": "^4.9.0",
+    "@vercel/blob": "2.8.2",
     "ai": "^7.0.122",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.4.0",

@@ -1,6 +1,6 @@
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import type { NextRequest } from "next/server";
-import { deleteUserData } from "@/db/queries/users";
+import { eraseUserData } from "@/features/account/erase";
 
 export const runtime = "nodejs";
 
@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "user.deleted" && event.data.id) {
     try {
-      await deleteUserData(event.data.id);
+      await eraseUserData(event.data.id);
     } catch {
       // Non-2xx makes Clerk retry the delivery.
       return new Response("Failed", { status: 500 });

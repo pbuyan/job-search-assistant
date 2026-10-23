@@ -32,6 +32,11 @@ vi.mock("@/db/queries/contacts", () => ({
   deleteContact: vi.fn(async () => false),
 }));
 
+const snapshotSentResume = vi.fn(async () => "stored" as const);
+vi.mock("@/features/export/snapshot", () => ({
+  snapshotSentResume: (...a: unknown[]) => snapshotSentResume(...(a as [])),
+}));
+
 const ID = "11111111-1111-4111-8111-111111111111";
 
 describe("schemas", () => {
@@ -141,12 +146,16 @@ describe("application actions", () => {
       notes: null,
       coverLetter: null,
     });
+    // The attached version is now what was sent: keep its PDF.
+    expect(snapshotSentResume).toHaveBeenCalledWith("user-1", ID);
 
+    snapshotSentResume.mockClear();
     updateApplication.mockResolvedValueOnce("invalidResume");
     expect(await saveApplicationDetails({ id: ID, ...details })).toEqual({
       ok: false,
       error: "invalidResume",
     });
+    expect(snapshotSentResume).not.toHaveBeenCalled();
     // A row that isn't the user's looks the same as a missing one.
     expect(await deleteApplicationContact(ID)).toEqual({
       ok: false,

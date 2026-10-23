@@ -1,4 +1,4 @@
-import { and, desc, eq, notExists, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, notExists, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
 import {
@@ -64,6 +64,7 @@ export async function getResumeVersion(userId: string, id: string) {
       data: resumeVersions.data,
       model: resumeVersions.model,
       promptVersion: resumeVersions.promptVersion,
+      exportedFileKey: resumeVersions.exportedFileKey,
       locked: sql<boolean>`exists (${attachedTo(userId)})`,
       // A translation's source, if it still exists.
       sourceVersionId: sourceVersions.id,
@@ -156,6 +157,28 @@ export async function updateResumeVersionData(
     .where(and(eq(resumeVersions.id, id), eq(resumeVersions.userId, userId)))
     .limit(1);
   return exists ? "locked" : "notFound";
+}
+
+// Records the stored copy of the file that was sent, once: the first
+// snapshot of a locked version stands. False when it was already set or the
+// version isn't the user's.
+export async function setExportedFileKey(
+  userId: string,
+  id: string,
+  key: string,
+): Promise<boolean> {
+  const rows = await db
+    .update(resumeVersions)
+    .set({ exportedFileKey: key, updatedAt: sql`${resumeVersions.updatedAt}` })
+    .where(
+      and(
+        eq(resumeVersions.id, id),
+        eq(resumeVersions.userId, userId),
+        isNull(resumeVersions.exportedFileKey),
+      ),
+    )
+    .returning({ id: resumeVersions.id });
+  return rows.length > 0;
 }
 
 // An unlocked copy with the same content and provenance. Null when the

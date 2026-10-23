@@ -3,13 +3,13 @@
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
-import { deleteUserData } from "@/db/queries/users";
+import { eraseUserData } from "./erase";
 
 export type DeleteAccountError = "unauthorized" | "notConfirmed" | "failed";
 
 const deleteInput = z.object({ confirm: z.string().max(100) });
 
-// Deletes all of the user's data, then their Clerk account. Data goes first so
+// Deletes all of the user's files and data, then their Clerk account. Data goes first so
 // a Clerk failure never leaves resume content behind; the Clerk `user.deleted`
 // webhook deletes the data again (a no-op) if the account is removed elsewhere.
 // The confirmation word is checked here too, in the UI language.
@@ -28,7 +28,7 @@ export async function deleteAccount(
     return { ok: false, error: "notConfirmed" };
 
   try {
-    await deleteUserData(userId);
+    await eraseUserData(userId);
     const clerk = await clerkClient();
     await clerk.users.deleteUser(userId);
     return { ok: true };

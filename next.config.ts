@@ -11,6 +11,8 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/resumes/[id]/export": ["./src/features/export/fonts/*"],
     "/api/profile/export": ["./src/features/export/fonts/*"],
+    // Attaching a resume to an application keeps a PDF of it (server action).
+    "/[locale]/tracker/[id]": ["./src/features/export/fonts/*"],
   },
   experimental: {
     serverActions: {
