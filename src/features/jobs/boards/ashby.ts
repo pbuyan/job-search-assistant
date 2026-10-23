@@ -160,12 +160,23 @@ async function fetchBoard(board: string) {
     : { ok: false as const, error: "failed" as const };
 }
 
+// A board read is shared through `boards` when several postings of the same
+// board are checked in one run (see features/jobs/refresh.ts).
+export type AshbyBoardCache = Map<string, ReturnType<typeof fetchBoard>>;
+
 export async function importAshbyJob(
   target: AshbyTarget,
+  boards?: AshbyBoardCache,
 ): Promise<
   { ok: true; posting: BoardPosting } | { ok: false; error: BoardImportError }
 > {
-  const board = await fetchBoard(target.board);
+  const key = target.board.toLowerCase();
+  let read = boards?.get(key);
+  if (!read) {
+    read = fetchBoard(target.board);
+    boards?.set(key, read);
+  }
+  const board = await read;
   if (!board.ok)
     return {
       ok: false,

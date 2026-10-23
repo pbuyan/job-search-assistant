@@ -2,13 +2,18 @@
 
 import { auth } from "@clerk/nextjs/server";
 import { getLocale } from "next-intl/server";
-import { VoyageAIError } from "voyageai";
 import { z } from "zod";
-import { deleteJob as deleteJobRow, getJob, upsertJob } from "@/db/queries/jobs";
+import {
+  deleteJob as deleteJobRow,
+  getJob,
+  getJobPosting,
+  markPostingChecked,
+  updateJobPosting,
+  upsertJob,
+} from "@/db/queries/jobs";
 import { insertMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
 import { consumeQuota } from "@/db/queries/usage";
-import { embedDocument, isRateLimited } from "@/lib/ai/embeddings";
 import { analyzeFit } from "./analyze-fit";
 import { importerFor } from "./boards";
 import type { BoardImportError, BoardPosting } from "./boards/common";
@@ -23,7 +28,8 @@ import {
   parseGreenhouseUrl,
   type GreenhouseImportError,
 } from "./greenhouse";
-import { parseJob } from "./parse-job";
+import { jobFields, parseAndEmbed, type IngestError } from "./ingest";
+import { boardPostingText, checkPosting, sameDescription } from "./refresh";
 
 const createJobInput = z
   .object({
@@ -85,15 +91,7 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
         ok: false,
         error: greenhouseTarget ? "greenhouseUnavailable" : "boardUnavailable",
       };
-    posting = [
-      ["Title", board.title],
-      ["Company", board.company],
-      ["Location", board.location],
-    ]
-      .filter(([, value]) => value)
-      .map(([label, value]) => `${label}: ${value}`)
-      .concat("", board.description)
-      .join("\n");
+    posting = boardPostingText(board);
     source = greenhouseTarget ? "greenhouse" : boardImporter!.source;
     storedUrl = board.url;
   } else {
@@ -108,52 +106,76 @@ export async function createJob(input: unknown): Promise<CreateJobResult> {
 
   if ((await consumeQuota(userId, "parseJob")) === "exceeded")
     return { ok: false, error: "quotaExceeded" };
-  const parsed = await parseJob(posting);
+  const parsed = await parseAndEmbed(posting);
   if (!parsed.ok) return { ok: false, error: parsed.error };
-  const { job, requirements, language } = parsed.output;
 
-  let embedding: number[];
-  try {
-    embedding = await embedDocument(
-      [job.title, job.company, job.location ?? "", posting]
-        .filter(Boolean)
-        .join("\n"),
-    );
-  } catch (err) {
-    // Status code and error class only; the body can echo the posting text.
-    console.error("embedDocument failed", {
-      name: err instanceof Error ? err.name : typeof err,
-      status: err instanceof VoyageAIError ? err.statusCode : undefined,
-    });
-    return {
-      ok: false,
-      error: isRateLimited(err) ? "embedRateLimited" : "embedFailed",
-    };
-  }
-
-  // Board API fields are authoritative; the model fills in what they lack.
-  const salary = board?.salary;
   try {
     const jobId = await upsertJob(userId, {
       source,
       externalId: board?.externalId ?? null,
       url: storedUrl,
-      company: board?.company || job.company,
-      title: board?.title || job.title,
-      location: board?.location || job.location || null,
-      remote: board?.remote ?? job.remote,
-      salaryMin: salary ? salary.min : (job.salaryMin ?? null),
-      salaryMax: salary ? salary.max : (job.salaryMax ?? null),
-      salaryCurrency: salary ? salary.currency : (job.salaryCurrency ?? null),
-      descriptionRaw: board?.description ?? posting,
-      requirements,
-      requirementsModel: parsed.model,
-      requirementsPromptVersion: parsed.promptVersion,
-      embedding,
-      postedAt: board?.postedAt ?? null,
-      language: board?.language ?? language,
+      ...jobFields(parsed, board, posting),
     });
     return { ok: true, jobId };
+  } catch {
+    return { ok: false, error: "failed" };
+  }
+}
+
+export type CheckJobError =
+  | "unauthorized"
+  | "notFound"
+  | "unsupported"
+  | "unavailable"
+  | "quotaExceeded"
+  | "tooLong"
+  | IngestError
+  | "failed";
+
+export type CheckJobResult =
+  | { ok: true; outcome: "open" | "updated" | "closed" }
+  | { ok: false; error: CheckJobError };
+
+// Asks the job board again whether an imported posting is still open. A
+// posting whose text changed is parsed and embedded again (one parseJob
+// call); an unchanged one costs nothing. Earlier fit analyses are kept as
+// they were. Only Greenhouse, Lever and Ashby postings can be checked.
+export async function checkJobPosting(jobId: unknown): Promise<CheckJobResult> {
+  const { userId } = await auth();
+  if (!userId) return { ok: false, error: "unauthorized" };
+  const id = z.uuid().safeParse(jobId);
+  if (!id.success) return { ok: false, error: "notFound" };
+
+  try {
+    const stored = await getJobPosting(userId, id.data);
+    if (!stored) return { ok: false, error: "notFound" };
+    const check = await checkPosting(stored);
+    if (check.state === "unsupported" || check.state === "unavailable")
+      return { ok: false, error: check.state };
+    if (check.state === "closed") {
+      await markPostingChecked(userId, stored.id, "closed");
+      return { ok: true, outcome: "closed" };
+    }
+
+    // Open: record that first, so a failed re-parse still clears "closed".
+    await markPostingChecked(userId, stored.id, "open");
+    const board = check.posting;
+    if (sameDescription(board.description, stored.descriptionRaw))
+      return { ok: true, outcome: "open" };
+    if (board.description.length > MAX_POSTING_CHARS)
+      return { ok: false, error: "tooLong" };
+
+    if ((await consumeQuota(userId, "parseJob")) === "exceeded")
+      return { ok: false, error: "quotaExceeded" };
+    const posting = boardPostingText(board);
+    const parsed = await parseAndEmbed(posting);
+    if (!parsed.ok) return { ok: false, error: parsed.error };
+    await updateJobPosting(
+      userId,
+      stored.id,
+      jobFields(parsed, board, posting),
+    );
+    return { ok: true, outcome: "updated" };
   } catch {
     return { ok: false, error: "failed" };
   }

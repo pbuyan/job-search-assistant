@@ -54,7 +54,11 @@ export default async function JobsPage({
     listJobs(userId, query, minSalary),
   ]);
   const filtered = Boolean(
-    query.remote || query.location || query.analyzed || query.salary,
+    query.remote ||
+    query.location ||
+    query.analyzed ||
+    query.salary ||
+    query.posting,
   );
 
   // Currency codes come from parsed postings; an unknown one would make Intl
@@ -128,18 +132,28 @@ export default async function JobsPage({
                     <span className="min-w-0 font-medium wrap-break-word">
                       {job.title || t("untitled")}
                     </span>
-                    {job.score !== null ? (
-                      <Badge variant="secondary" className="tabular-nums">
-                        {t("fit", { score: job.score })}
-                      </Badge>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className="text-muted-foreground"
-                      >
-                        {t("notAnalyzed")}
-                      </Badge>
-                    )}
+                    <span className="flex flex-wrap gap-1.5">
+                      {job.closedAt ? (
+                        <Badge
+                          variant="outline"
+                          className="text-muted-foreground"
+                        >
+                          {t("detail.posting.closed")}
+                        </Badge>
+                      ) : null}
+                      {job.score !== null ? (
+                        <Badge variant="secondary" className="tabular-nums">
+                          {t("fit", { score: job.score })}
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-muted-foreground"
+                        >
+                          {t("notAnalyzed")}
+                        </Badge>
+                      )}
+                    </span>
                   </span>
                   <span className="text-sm text-muted-foreground">
                     {[

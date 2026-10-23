@@ -23,6 +23,8 @@ export type BoardCard = {
   company: string;
   title: string;
   score: number | null;
+  // The posting was found closed on its job board.
+  closed: boolean;
   nextStep: string | null;
   nextStepDue: string | null; // YYYY-MM-DD (date column)
 };

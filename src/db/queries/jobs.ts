@@ -1,4 +1,18 @@
-import { and, desc, eq, exists, ilike, inArray, notExists, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  exists,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  lt,
+  notExists,
+  or,
+  sql,
+} from "drizzle-orm";
 import { db } from "@/db";
 import { applications, contacts, jobMatches, jobs, profiles } from "@/db/schema";
 import type { JobListParams } from "@/features/matching/schemas";
@@ -37,6 +51,8 @@ const jobColumns = {
   salaryCurrency: jobs.salaryCurrency,
   requirements: jobs.requirements,
   language: jobs.language,
+  closedAt: jobs.closedAt,
+  checkedAt: jobs.checkedAt,
   createdAt: jobs.createdAt,
 };
 
@@ -50,6 +66,86 @@ export async function getJob(userId: string, jobId: string) {
 }
 
 export type JobRow = NonNullable<Awaited<ReturnType<typeof getJob>>>;
+
+// What a posting check needs: where to read it again, and the stored text to
+// compare it with.
+export async function getJobPosting(userId: string, jobId: string) {
+  const [row] = await db
+    .select({
+      id: jobs.id,
+      source: jobs.source,
+      url: jobs.url,
+      descriptionRaw: jobs.descriptionRaw,
+      closedAt: jobs.closedAt,
+    })
+    .from(jobs)
+    .where(and(eq(jobs.id, jobId), eq(jobs.userId, userId)))
+    .limit(1);
+  return row ?? null;
+}
+
+// Records a posting check. A closed posting keeps the date it was first seen
+// closed; an open one is (re)opened; an unreachable board changes nothing
+// but the check time. updatedAt is kept: the job itself didn't change.
+export async function markPostingChecked(
+  userId: string,
+  jobId: string,
+  state: "open" | "closed" | "unavailable",
+  now = new Date(),
+): Promise<boolean> {
+  const closedAt =
+    state === "open"
+      ? null
+      : state === "closed"
+        ? sql`coalesce(${jobs.closedAt}, ${now.toISOString()}::timestamptz)`
+        : sql`${jobs.closedAt}`;
+  const rows = await db
+    .update(jobs)
+    .set({ checkedAt: now, closedAt, updatedAt: sql`${jobs.updatedAt}` })
+    .where(and(eq(jobs.id, jobId), eq(jobs.userId, userId)))
+    .returning({ id: jobs.id });
+  return rows.length > 0;
+}
+
+// A refreshed posting whose text changed: new text, requirements and
+// embedding, and open as of this check.
+export async function updateJobPosting(
+  userId: string,
+  jobId: string,
+  job: Partial<NewJob>,
+  now = new Date(),
+): Promise<boolean> {
+  const rows = await db
+    .update(jobs)
+    .set({ ...job, closedAt: null, checkedAt: now, updatedAt: now })
+    .where(and(eq(jobs.id, jobId), eq(jobs.userId, userId)))
+    .returning({ id: jobs.id });
+  return rows.length > 0;
+}
+
+// For the daily cron only, which acts for every user: open board postings not
+// checked since `before`, least recently checked first. It returns each row's
+// userId, and every write that follows filters by it.
+export async function listJobsToCheck(before: Date, limit: number) {
+  return db
+    .select({
+      id: jobs.id,
+      userId: jobs.userId,
+      source: jobs.source,
+      url: jobs.url,
+    })
+    .from(jobs)
+    .where(
+      and(
+        inArray(jobs.source, ["greenhouse", "lever", "ashby"]),
+        isNotNull(jobs.url),
+        isNull(jobs.closedAt),
+        or(isNull(jobs.checkedAt), lt(jobs.checkedAt, before)),
+      ),
+    )
+    .orderBy(sql`${jobs.checkedAt} asc nulls first`, asc(jobs.createdAt))
+    .limit(limit);
+}
 
 // Cosine similarity between a job and the user's profile (1 = same
 // direction), null when either has no embedding. Both are embedded with the
@@ -116,6 +212,7 @@ export async function listJobs(
       salaryMin: jobs.salaryMin,
       salaryMax: jobs.salaryMax,
       salaryCurrency: jobs.salaryCurrency,
+      closedAt: jobs.closedAt,
       createdAt: jobs.createdAt,
       similarity,
       score,
@@ -130,6 +227,8 @@ export async function listJobs(
           : undefined,
         params.analyzed === "yes" ? exists(analyses(userId)) : undefined,
         params.analyzed === "no" ? notExists(analyses(userId)) : undefined,
+        params.posting === "open" ? isNull(jobs.closedAt) : undefined,
+        params.posting === "closed" ? isNotNull(jobs.closedAt) : undefined,
         params.salary === "min" && minSalary
           ? sql`not (${jobs.salaryMax} is not null and ${jobs.salaryCurrency} = ${minSalary.currency} and ${jobs.salaryMax} < ${minSalary.amount})`
           : undefined,

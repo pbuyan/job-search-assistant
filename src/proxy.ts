@@ -18,6 +18,8 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Signed by the sender and verified in the handler; there is no session.
   if (pathname.startsWith("/api/webhooks/")) return NextResponse.next();
+  // Vercel Cron; the handler checks CRON_SECRET.
+  if (pathname.startsWith("/api/cron/")) return NextResponse.next();
 
   if (pathname.startsWith("/api")) {
     await auth.protect();

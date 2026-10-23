@@ -328,6 +328,9 @@
       "analyzedNo": "Non analysés",
       "salary": "Salaire",
       "salaryMin": "Au moins mon minimum",
+      "posting": "Statut de l'offre",
+      "postingOpen": "Toujours ouvertes",
+      "postingClosed": "Fermées",
       "location": "Lieu",
       "locationPlaceholder": "p. ex. Montréal",
       "clear": "Effacer les filtres"
@@ -417,6 +420,32 @@
       "remote": { "onsite": "Sur place", "hybrid": "Hybride", "remote": "Télétravail" },
       "postingLanguage": "Offre en {language}",
       "viewPosting": "Voir l'offre",
+      "posting": {
+        "closed": "Offre fermée",
+        "closedSince": "Constatée fermée sur le site d'emplois le {date}.",
+        "checkedAt": "Dernière vérification le {date}.",
+        "neverChecked": "Pas encore vérifiée depuis l'importation.",
+        "check": "Vérifier si l'offre est encore ouverte",
+        "checking": "Vérification…",
+        "outcomes": {
+          "open": "Toujours ouverte. L'offre n'a pas changé.",
+          "updated": "Toujours ouverte. L'offre a changé, et ses exigences ont été mises à jour. Relancez l'analyse pour voir votre correspondance actuelle.",
+          "closed": "Cette offre n'est plus sur le site d'emplois. Elle est maintenant marquée comme fermée."
+        },
+        "errors": {
+          "unauthorized": "Votre session a expiré. Reconnectez-vous.",
+          "notFound": "Cet emploi n'existe plus.",
+          "unsupported": "Le lien de cette offre ne peut pas être vérifié automatiquement.",
+          "unavailable": "Le site d'emplois n'a pas pu être joint; rien n'a changé. Réessayez plus tard.",
+          "quotaExceeded": "L'offre est toujours ouverte et a changé, mais vous avez atteint la limite quotidienne de lecture d'offres. Elle sera réinitialisée à minuit (UTC).",
+          "tooLong": "L'offre est toujours ouverte, mais son nouveau texte est trop long pour être traité.",
+          "parseFailed": "L'offre est toujours ouverte, mais son nouveau texte n'a pas pu être traité. Réessayez.",
+          "noRequirements": "L'offre est toujours ouverte, mais aucune exigence n'a été trouvée dans son nouveau texte.",
+          "embedFailed": "L'offre est toujours ouverte, mais son nouveau texte n'a pas pu être indexé. Réessayez.",
+          "embedRateLimited": "Le service d'indexation est occupé. Attendez une minute, puis réessayez.",
+          "failed": "L'offre n'a pas pu être vérifiée. Réessayez."
+        }
+      },
       "fit": "Correspondance avec votre profil",
       "scoreExplained": "Le score est calculé à partir des exigences ci-dessous : les exigences obligatoires comptent trois fois plus que les atouts, et un écart mineur compte comme à moitié satisfait.",
       "otherLanguage": "Cette analyse a été rédigée en {language}. Relancez-la pour l'obtenir dans la langue actuelle.",
@@ -632,7 +661,8 @@
       "nextStep": "Prochaine étape",
       "due": "échéance le {date}",
       "overdue": "En retard",
-      "dueToday": "Échéance aujourd'hui"
+      "dueToday": "Échéance aujourd'hui",
+      "closed": "Offre fermée"
     },
     "a11y": {
       "roleDescription": "candidature déplaçable",

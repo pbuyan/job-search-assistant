@@ -79,6 +79,8 @@ export const jobs = pgTable("jobs", {
   embedding: vector("embedding", { dimensions: EMBEDDING_DIMS }),
   postedAt: timestamp("posted_at", { withTimezone: true }),
   closedAt: timestamp("closed_at", { withTimezone: true }),
+  // Last time the board API was asked whether the posting is still open.
+  checkedAt: timestamp("checked_at", { withTimezone: true }),
   language: text("language"), // job posting language, detected
   ...timestamps,
 }, (t) => [

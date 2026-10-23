@@ -9,6 +9,7 @@ import {
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { AnalyzeButton } from "@/components/jobs/analyze-button";
+import { CheckPostingButton } from "@/components/jobs/check-posting-button";
 import { DeleteJobButton } from "@/components/jobs/delete-job-button";
 import { TrackJobButton } from "@/components/tracker/track-job-button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ import { getApplicationForJob } from "@/db/queries/applications";
 import { getJob } from "@/db/queries/jobs";
 import { getLatestMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
+import { BOARD_SOURCES } from "@/features/jobs/refresh";
 import { listResumeVersions } from "@/db/queries/resume-versions";
 import { Link, redirect } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
@@ -55,6 +57,8 @@ export default async function JobPage({
       getFormatter(),
     ]);
   if (!job) notFound();
+  const fromBoard = (BOARD_SOURCES as readonly string[]).includes(job.source);
+  const day = (d: Date) => format.dateTime(d, { dateStyle: "medium" });
 
   // Evidence is shown as the cited bullet text from the *current* profile; a
   // bullet deleted since the analysis is flagged rather than hidden.
@@ -77,6 +81,9 @@ export default async function JobPage({
           {[job.company, job.location].filter(Boolean).join(" · ")}
         </p>
         <div className="flex flex-wrap items-center gap-2">
+          {job.closedAt ? (
+            <Badge variant="destructive">{t("posting.closed")}</Badge>
+          ) : null}
           {job.remote !== "unknown" ? (
             <Badge variant="secondary">{t(`remote.${job.remote}`)}</Badge>
           ) : null}
@@ -99,6 +106,18 @@ export default async function JobPage({
             </a>
           ) : null}
         </div>
+        {fromBoard ? (
+          <div className="flex flex-col gap-1.5 pt-1">
+            <p className="text-start text-xs text-muted-foreground">
+              {job.closedAt
+                ? t("posting.closedSince", { date: day(job.closedAt) })
+                : job.checkedAt
+                  ? t("posting.checkedAt", { date: day(job.checkedAt) })
+                  : t("posting.neverChecked")}
+            </p>
+            <CheckPostingButton jobId={job.id} />
+          </div>
+        ) : null}
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {application ? (
             <p className="text-start text-sm">
