@@ -16,6 +16,9 @@ const isPublic = createRouteMatcher([
 export default clerkMiddleware(async (auth, req) => {
   const { pathname, search } = req.nextUrl;
 
+  // Signed by the sender and verified in the handler; there is no session.
+  if (pathname.startsWith("/api/webhooks/")) return NextResponse.next();
+
   if (pathname.startsWith("/api")) {
     await auth.protect();
     return NextResponse.next();

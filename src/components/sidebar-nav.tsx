@@ -4,6 +4,7 @@ import {
   FileText,
   KanbanSquare,
   LayoutDashboard,
+  Settings,
   UserRound,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -23,6 +24,7 @@ const items = [
   { key: "jobs", href: "/jobs", icon: BriefcaseBusiness },
   { key: "resumes", href: "/resumes", icon: FileText },
   { key: "tracker", href: "/tracker", icon: KanbanSquare },
+  { key: "settings", href: "/settings", icon: Settings },
 ] as const;
 
 export function SidebarNav() {

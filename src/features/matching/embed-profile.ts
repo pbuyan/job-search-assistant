@@ -3,6 +3,7 @@ import {
   getProfileForEmbedding,
   setProfileEmbedding,
 } from "@/db/queries/profile";
+import { consumeQuota } from "@/db/queries/usage";
 import { embedDocument, isRateLimited } from "@/lib/ai/embeddings";
 import { profileEmbeddingText } from "./profile-text";
 
@@ -24,6 +25,9 @@ export async function embedProfile(
   if (!profile) return "noProfile";
   const text = profileEmbeddingText(profile.data, profile.targetTitles);
   if (!text) return "noProfile";
+  // Over the daily cap reads as "busy, try later", like a provider limit.
+  if ((await consumeQuota(userId, "embedProfile")) === "exceeded")
+    return "rateLimited";
 
   let embedding: number[];
   try {

@@ -10,7 +10,7 @@
     "themeDark": "Dark",
     "loading": "Loading…"
   },
-  "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker", "resumes": "Resumes" },
+  "Nav": { "dashboard": "Dashboard", "profile": "Profile", "jobs": "Jobs", "tracker": "Tracker", "resumes": "Resumes", "settings": "Settings" },
   "Sidebar": {
     "title": "Sidebar",
     "mobileDescription": "Displays the mobile sidebar.",
@@ -79,6 +79,10 @@
     "boards": {
       "title": "Browse a job board",
       "description": "See a company's open postings on Greenhouse, Lever or Ashby and import the ones you want."
+    },
+    "settings": {
+      "title": "Settings",
+      "description": "Manage your account and your data."
     }
   },
   "Auth": { "tagline": "Match jobs to your experience and track every application." },
@@ -143,6 +147,26 @@
       "openTracker": "Open tracker"
     }
   },
+  "Settings": {
+    "title": "Settings",
+    "description": "Manage your account and your data.",
+    "delete": {
+      "title": "Delete account",
+      "intro": "Permanently deletes your account, profile, jobs, fit analyses, resume versions, applications and contacts. This can't be undone.",
+      "button": "Delete account",
+      "dialogTitle": "Delete your account?",
+      "dialogBody": "Everything you've saved here will be deleted permanently, and you'll be signed out. To confirm, type {word} below.",
+      "confirmWord": "DELETE",
+      "confirmLabel": "Confirmation",
+      "cancel": "Cancel",
+      "confirm": "Delete permanently",
+      "errors": {
+        "unauthorized": "Your session has expired. Sign in again.",
+        "notConfirmed": "Type the confirmation word exactly as shown.",
+        "failed": "Your account couldn't be deleted. Try again."
+      }
+    }
+  },
   "Profile": {
     "title": "Profile",
     "description": "Your master profile. Tailored resumes only reorder, trim and reword what is here.",
@@ -170,6 +194,7 @@
         "tooLong": "That document is too long to be a resume.",
         "noContent": "No resume details could be found in that file.",
         "parseFailed": "Your resume could not be processed. Try again.",
+        "quotaExceeded": "You've reached today's limit for this action. It resets at midnight UTC.",
         "network": "The upload failed. Check your connection and try again."
       },
       "review": {
@@ -376,6 +401,7 @@
         "tooShort": "That's too short to be a job description. Paste the full posting.",
         "tooLong": "That's too long to be a single job posting.",
         "parseFailed": "The posting couldn't be processed. Try again.",
+        "quotaExceeded": "You've reached today's limit for this action. It resets at midnight UTC.",
         "noRequirements": "No requirements were found in that posting. Check that you pasted the full description.",
         "embedFailed": "The job couldn't be indexed. Try again.",
         "embedRateLimited": "The indexing service is busy. Wait a minute, then try again.",
@@ -412,6 +438,7 @@
         "noProfile": "Add your work experience and achievements to your profile first.",
         "noRequirements": "This job has no extracted requirements to compare against.",
         "parseFailed": "The analysis couldn't be completed. Try again.",
+        "quotaExceeded": "You've reached today's limit for this action. It resets at midnight UTC.",
         "invalidAnalysis": "The analysis cited experience that isn't in your profile, so it was discarded. Try again.",
         "failed": "The analysis couldn't be saved. Try again."
       },
@@ -466,6 +493,7 @@
         "noProfile": "Add your work experience and achievements to your profile first.",
         "noRequirements": "This job has no extracted requirements to tailor against.",
         "parseFailed": "The proposal couldn't be generated. Try again.",
+        "quotaExceeded": "You've reached today's limit for this action. It resets at midnight UTC.",
         "invalidTailoring": "The proposal used content that isn't in your profile, so it was discarded. Try again.",
         "invalid": "Some fields are invalid. Check the version name and try again.",
         "invalidSource": "Your profile changed since this proposal was made. Generate it again.",
@@ -564,6 +592,7 @@
         "notFound": "This resume version no longer exists.",
         "sameLanguage": "This version is already in that language.",
         "parseFailed": "The translation couldn't be completed. Try again.",
+        "quotaExceeded": "You've reached today's limit for this action. It resets at midnight UTC.",
         "invalidTranslation": "The translation didn't match the original (an achievement or a number was lost), so it was discarded. Try again.",
         "failed": "The translation couldn't be saved. Try again."
       }

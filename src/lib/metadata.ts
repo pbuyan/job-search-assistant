@@ -14,7 +14,8 @@ export type MetaPage =
   | "resumes"
   | "tailor"
   | "application"
-  | "boards";
+  | "boards"
+  | "settings";
 
 const ogLocales: Record<Locale, string> = { en: "en_CA", fr: "fr_CA" };
 

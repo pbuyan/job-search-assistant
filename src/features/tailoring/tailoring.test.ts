@@ -101,6 +101,10 @@ const getJob = vi.fn(async (): Promise<{ id: string } | null> => ({
 vi.mock("@/db/queries/profile", () => ({ getProfile: () => getProfile() }));
 vi.mock("@/db/queries/jobs", () => ({ getJob: () => getJob() }));
 vi.mock("@/db/queries/matches", () => ({ getLatestMatch: async () => null }));
+const consumeQuota = vi.fn(async (): Promise<"ok" | "exceeded"> => "ok");
+vi.mock("@/db/queries/usage", () => ({
+  consumeQuota: (...a: unknown[]) => consumeQuota(...(a as [])),
+}));
 
 const good: TailorPlan = {
   summary: "Payments engineer with 8 years of experience.",

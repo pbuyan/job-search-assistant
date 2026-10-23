@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getJob } from "@/db/queries/jobs";
 import { getLatestMatch } from "@/db/queries/matches";
 import { getProfile } from "@/db/queries/profile";
+import { consumeQuota } from "@/db/queries/usage";
 import {
   deleteResumeVersion as deleteResumeVersionRow,
   duplicateResumeVersion as duplicateResumeVersionRow,
@@ -30,7 +31,8 @@ export type ProposeTailoringError =
   | "noProfile"
   | "noRequirements"
   | "parseFailed"
-  | "invalidTailoring";
+  | "invalidTailoring"
+  | "quotaExceeded";
 
 // Returns a proposal only; nothing is stored until the user saves it.
 export async function proposeTailoring(
@@ -52,6 +54,8 @@ export async function proposeTailoring(
   if (!job.requirements) return { ok: false, error: "noRequirements" };
   if (!profile) return { ok: false, error: "noProfile" };
 
+  if ((await consumeQuota(userId, "tailorResume")) === "exceeded")
+    return { ok: false, error: "quotaExceeded" };
   const result = await tailorResume({
     job: { title: job.title, company: job.company },
     requirements: job.requirements,
