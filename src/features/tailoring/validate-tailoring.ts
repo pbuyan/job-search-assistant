@@ -1,5 +1,6 @@
 import type { ProfileData } from "@/db/schema";
 import type { TailorPlan } from "@/prompts/tailor-resume";
+import { numberWordsIn } from "./number-words";
 
 export type TailoringProblem =
   | { kind: "unknownWork"; sourceWorkId: string }
@@ -20,12 +21,14 @@ const key = (s: string) => s.trim().toLowerCase();
 // Numbers as written, with separators dropped so "1,200", "1 200" (French,
 // with a plain, no-break or narrow no-break space) and "1200" compare equal.
 // A plain space only joins a following group of exactly three digits: "3 5"
-// is two numbers.
+// is two numbers. Numbers written as words count too, so "four" and "quatre"
+// equal "4" (see number-words.ts).
 const NUMBER = /\d+(?:[.,\u00a0\u202f]\d+| \d{3}(?!\d))*/g;
 export function numbersIn(text: string): Set<string> {
-  return new Set(
-    (text.match(NUMBER) ?? []).map((n) => n.replace(/[., \u00a0\u202f]/g, "")),
-  );
+  return new Set([
+    ...(text.match(NUMBER) ?? []).map((n) => n.replace(/[., \u00a0\u202f]/g, "")),
+    ...numberWordsIn(text),
+  ]);
 }
 
 // Owner of every master bullet: "work:<id>" or "project:<id>".

@@ -97,6 +97,38 @@ describe("validateCoverLetter", () => {
     ]);
   });
 
+  it("catches invented numbers written as words, in English and French", () => {
+    const words = (text: string): CoverLetterDraft => ({
+      paragraphs: [good.paragraphs[0], { text, sourceBulletIds: ["b-oncall"] }],
+    });
+    expect(
+      validateCoverLetter(words("I led four developers on call."), profile, job),
+    ).toEqual([{ kind: "newNumber", paragraph: 1 }]);
+    expect(
+      validateCoverLetter(words("J'ai dirigé quatre développeurs."), profile, job),
+    ).toEqual([{ kind: "newNumber", paragraph: 1 }]);
+    expect(
+      validateCoverLetter(words("I was one of the leads on call."), profile, job),
+    ).toEqual([]);
+
+    const team: ProfileData = {
+      ...profile,
+      work: [
+        {
+          ...profile.work[0],
+          bullets: [{ id: "b-team", text: "Managed 4 developers" }],
+        },
+      ],
+    };
+    const cited: CoverLetterDraft = {
+      paragraphs: [
+        good.paragraphs[0],
+        { text: "I managed four developers.", sourceBulletIds: ["b-team"] },
+      ],
+    };
+    expect(validateCoverLetter(cited, team, job)).toEqual([]);
+  });
+
   it("allows numbers from the job's own title, and needs 2 to 6 paragraphs", () => {
     const level: CoverLetterDraft = {
       paragraphs: [
