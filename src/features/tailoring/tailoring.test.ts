@@ -151,6 +151,30 @@ describe("numbersIn", () => {
       new Set(["40", "1200", "2019"]),
     );
   });
+
+  it("reads numbers written as words in English and French", () => {
+    expect(numbersIn("Led four developers")).toEqual(new Set(["4"]));
+    expect(numbersIn("Twenty-five stores, two hundred and five users")).toEqual(
+      new Set(["25", "205"]),
+    );
+    expect(numbersIn("quatre développeurs")).toEqual(new Set(["4"]));
+    expect(numbersIn("vingt-cinq, quatre-vingt-dix, soixante et onze")).toEqual(
+      new Set(["25", "90", "71"]),
+    );
+    expect(numbersIn("deux cents magasins, dix-neuf villes")).toEqual(
+      new Set(["200", "19"]),
+    );
+    expect(numbersIn("two thousand clients; vingt et un")).toEqual(
+      new Set(["2000", "21"]),
+    );
+  });
+
+  it("ignores words that usually aren't numbers", () => {
+    expect(
+      numbersIn("One of the leads, a new one. Une équipe neuve, un produit neuf, 5 per cent, a thousand thanks"),
+    ).toEqual(new Set(["5"]));
+    expect(numbersIn("two. Three")).toEqual(new Set(["2", "3"]));
+  });
 });
 
 describe("validateTailoring", () => {

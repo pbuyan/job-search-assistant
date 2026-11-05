@@ -166,6 +166,19 @@ describe("validateTranslation", () => {
       { kind: "numbers", id: "work.0.bullets.0.text" },
     ]);
   });
+
+  it("treats a number and its translated word as the same number", () => {
+    const src: Segment[] = [{ id: "a", text: "Mentored four engineers" }];
+    expect(
+      validateTranslation(src, [{ id: "a", text: "A encadré quatre ingénieurs" }]),
+    ).toEqual([]);
+    expect(
+      validateTranslation(src, [{ id: "a", text: "A encadré 4 ingénieurs" }]),
+    ).toEqual([]);
+    expect(
+      validateTranslation(src, [{ id: "a", text: "A encadré cinq ingénieurs" }]),
+    ).toEqual([{ kind: "numbers", id: "a" }]);
+  });
 });
 
 describe("applyTranslation", () => {
